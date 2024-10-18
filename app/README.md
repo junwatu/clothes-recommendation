@@ -1,10 +1,16 @@
-# Node.js + GridDB Docker on Apple Silicon
+# Installation
+
+This app tested on Apple M2 machine.
+
+## Prerequisite
+
+This app need a GridDB server.
 
 Make sure to check out this [blog](https://griddb.net/en/blog/griddb-on-arm-with-docker/) for instructions on how to install GridDB using Docker on ARM machines.
 
 ## Build
 
-Clone this repository, for example on MacBook M-series, and build with docker.
+Clone this repository and build the app with docker.
 
 ```shell
 docker build -t node-griddb-arm .

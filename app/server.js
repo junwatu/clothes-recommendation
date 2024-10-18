@@ -8,6 +8,8 @@ const app = express();
 const PORT = 3000;
 
 app.use(bodyParser.json());
+app.use(express.static('public'))
+app.use(express.static('www'))
 
 const containerName = 'myContainer';
 const columnInfoList = [
@@ -17,7 +19,7 @@ const columnInfoList = [
 ];
 
 app.get('/', async (req, res) => {
-	res.json({ app: "Your next awesome app" })
+	res.sendFile('www/index.html')
 })
 
 app.post('/insert', async (req, res) => {
