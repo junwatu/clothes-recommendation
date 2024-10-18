@@ -21,6 +21,7 @@ SHELL ["/bin/bash", "--login", "-c"]
 # Copy entrypoint and files
 COPY run-griddb.sh package.json main.js server.js /root/
 COPY db /root/db/
+COPY www /root/www
 
 WORKDIR /root
 
