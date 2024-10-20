@@ -45,7 +45,43 @@ Combining GPT-4o mini with Retrieval-Augmented Generation (RAG) offers several p
 
 ## **System Architecture**
 
+![system-arch](images/system-arch.jpg)
+
+This system architecture leverages **RAG** to ensure that the recommendations are informed by both **user-specific input** and **stored data**, making them more relevant and customized.
+
+Here’s a breakdown of the components and their interactions:
+
+1. **User Interaction**:
+   - The user inputs a **prompt** (e.g., their preferences or requirements for clothing) through a **React.js** based **User Interface**.
+   - This UI serves as the point where the user communicates with the system, sending prompts and receiving recommendations.
+
+2. **Node.js Backend**:
+   - The **Node.js** server acts as the core processing unit, handling communication between the user interface, database, and OpenAI services.
+   - It receives the user's prompt from the React.js front end and processes it to determine the data and insights required for a recommendation.
+
+3. **Data Source (GridDB)**:
+   - **GridDB** is used to store **clothing recommendation data** such as item descriptions, styles, weather conditions, user preferences, and more.
+
+4. **RAG Integration with OpenAI**:
+   - In this system, the Node.js server uses RAG to provide **enhanced context** by combining information fetched from **Text Embedded Model** with the user’s prompt before passing it to **OpenAI**.
+
+5. **OpenAI (Text Embedding + GPT-4.0 Mini)**:
+   - The **Text Embedding** model is used to generate vector representations of the prompt and any retrieved context, making it easier to match user queries with relevant data.
+   - **GPT-4.0 Mini** (a smaller variant of GPT-4) processes the **prompt, query, and enhanced context** together to generate tailored recommendations.
+   - This step enables the system to provide more personalized and context-aware recommendations based on both user input and the data fetched from GridDB.
+
+6. **Response Flow**:
+   - After generating the recommendation, the response is sent back through the Node.js backend to the **React.js** user interface, where the user can view the clothing suggestions.
+
 ## **Overview of Key Technologies**
+
+### OpenAI
+
+### Node.js
+
+### GridDB
+
+### React
 
 ## **Node.js Backend**
 
