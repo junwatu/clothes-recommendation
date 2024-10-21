@@ -4,17 +4,23 @@
 
 ## Table of Contents
 
-1. [Introduction](#introduction)
-2. [Understanding Retrieval-Augmented Generation (RAG)](#understanding-retrieval-augmented-generation-rag)
-   - [How Does RAG Work?](#how-does-rag-work)
-3. [Advantages of OpenAI & RAG in Fashion](#advantages-of-openai--rag-in-fashion)
-4. [System Architecture](#system-architecture)
-5. [Overview of Key Technologies](#overview-of-key-technologies)
-6. [Node.js Backend](#nodejs-backend)
-7. [Data Management with GridDB](#data-management-with-griddb)
-8. [Building User Interface](#building-user-interface)
-9. [Demo](#demo)
-10. [Further Enhancements](#further-enhancements)
+- [Clothes Recommendation System Using OpenAI \& RAG](#clothes-recommendation-system-using-openai--rag)
+  - [Table of Contents](#table-of-contents)
+  - [**Introduction**](#introduction)
+  - [**Understanding Retrieval-Augmented Generation (RAG)**](#understanding-retrieval-augmented-generation-rag)
+  - [How Does RAG Work?](#how-does-rag-work)
+  - [**Advantages of OpenAI \& RAG in Fashion**](#advantages-of-openai--rag-in-fashion)
+  - [**System Architecture**](#system-architecture)
+  - [**Overview of Key Technologies**](#overview-of-key-technologies)
+    - [OpenAI](#openai)
+    - [Node.js](#nodejs)
+    - [GridDB](#griddb)
+    - [React](#react)
+  - [**Node.js Backend**](#nodejs-backend)
+  - [**Data Management with GridDB**](#data-management-with-griddb)
+  - [**Building User Interface**](#building-user-interface)
+  - [**Demo**](#demo)
+  - [**Further Enhancements**](#further-enhancements)
 
 ## **Introduction**
 
@@ -51,27 +57,33 @@ This system architecture leverages **RAG** to ensure that the recommendations ar
 
 Here’s a breakdown of the components and their interactions:
 
-1. **User Interaction**:
-   - The user inputs a **prompt** (e.g., their preferences or requirements for clothing) through a **React.js** based **User Interface**.
-   - This UI serves as the point where the user communicates with the system, sending prompts and receiving recommendations.
+**User Interaction**:
 
-2. **Node.js Backend**:
-   - The **Node.js** server acts as the core processing unit, handling communication between the user interface, database, and OpenAI services.
-   - It receives the user's prompt from the React.js front end and processes it to determine the data and insights required for a recommendation.
+- The user inputs a **prompt** (e.g., their preferences or requirements for clothing) through a **React.js** based **User Interface**.
+- This UI serves as the point where the user communicates with the system, sending prompts and receiving recommendations.
 
-3. **Data Source (GridDB)**:
-   - **GridDB** is used to store **clothing recommendation data** such as item descriptions, styles, weather conditions, user preferences, and more.
+**Node.js Backend**:
 
-4. **RAG Integration with OpenAI**:
-   - In this system, the Node.js server uses RAG to provide **enhanced context** by combining information fetched from **Text Embedded Model** with the user’s prompt before passing it to **OpenAI**.
+- The **Node.js** server acts as the core processing unit, handling communication between the user interface, database, and OpenAI services.
+- It receives the user's prompt from the React.js front end and processes it to determine the data and insights required for a recommendation.
 
-5. **OpenAI (Text Embedding + GPT-4.0 Mini)**:
-   - The **Text Embedding** model is used to generate vector representations of the prompt and any retrieved context, making it easier to match user queries with relevant data.
-   - **GPT-4.0 Mini** (a smaller variant of GPT-4) processes the **prompt, query, and enhanced context** together to generate tailored recommendations.
-   - This step enables the system to provide more personalized and context-aware recommendations based on both user input and the data fetched from GridDB.
+**Data Source (GridDB)**:
 
-6. **Response Flow**:
-   - After generating the recommendation, the response is sent back through the Node.js backend to the **React.js** user interface, where the user can view the clothing suggestions.
+- **GridDB** is used to store **clothing recommendation data** such as item descriptions, styles, weather conditions, user preferences, and more.
+
+**RAG Integration with OpenAI**:
+
+- In this system, the Node.js server uses RAG to provide **enhanced context** by combining information fetched from **Text Embedded Model** with the user’s prompt before passing it to **OpenAI**.
+
+**OpenAI (Text Embedding + GPT-4.0 Mini)**:
+
+- The **Text Embedding** model is used to generate vector representations of the prompt and any retrieved context, making it easier to match user queries with relevant data.
+- **GPT-4.0 Mini** (a smaller variant of GPT-4) processes the **prompt, query, and enhanced context** together to generate tailored recommendations.
+- This step enables the system to provide more personalized and context-aware recommendations based on both user input and the data fetched from GridDB.
+
+**Response Flow**:
+
+- After generating the recommendation, the response is sent back through the Node.js backend to the **React.js** user interface, where the user can view the clothing suggestions.
 
 ## **Overview of Key Technologies**
 
