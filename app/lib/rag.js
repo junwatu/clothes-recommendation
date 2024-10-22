@@ -81,7 +81,6 @@ async function getDataItems() {
 		});
 
 	return dfItems
-
 }
 
 async function findMatchingItemsWithRag(itemDescs, filteredItems) {
@@ -119,33 +118,23 @@ async function encodeImageToBase64(imagePath) {
 	}
 }
 
-async function extractRelevantFeatures() {
-	//sample cloth
-	let imagePath = 'data/images/1545.jpg';
+async function extractRelevantFeatures(image) {
+	const imagePath = image || 'data/images/1545.jpg';
 	const base64Image = await encodeImageToBase64(imagePath);
 
-	const df = getDataItems();
+	const df = getDataItems(); 
 	const uniqueSubcategories = df.getSeries('articleType').distinct().toArray();
 
-	const itemAnalysis = await analyzeCloth(base64Image, uniqueSubcategories);
+	const { itemsRecommendation: itemDescs, category: itemCategory, gender: itemGender } = await analyzeCloth(base64Image, uniqueSubcategories);
 
-	let itemDescs = itemAnalysis?.itemsRecommendation
-	let itemCategory = itemAnalysis?.category
-	let itemGender = itemAnalysis?.gender
+	const filteredItems = df
+		.loc(df['gender'].isin([itemGender, 'Unisex']))
+		.query(row => row['articleType'] !== itemCategory);
 
-	// Get styles dataframe and filter by gender and category
-	const stylesDf = await getDataItems()
-	const filteredItems = stylesDf
-		.loc(stylesDf['gender'].isin([itemGender, 'Unisex']))
-		.query(row => row['articleType'] !== itemCategory)
+	console.log(`${filteredItems.shape[0]} Remaining Items`);
 
-	console.log(`${filteredItems.shape[0]} Remaining Items`)
-
-	// Find the most similar items based on the input item descriptions
-	const matchingItems = await findMatchingItemsWithRag(itemDescs, filteredItems)
-
-	return matchingItems
-
+	return await findMatchingItemsWithRag(itemDescs, filteredItems);
 }
 
-export { cosineSimilarityManual, findSimilarItems, findMatchingItemsWithRag, getEmbeddings, analyzeCloth }
+
+export { cosineSimilarityManual, findSimilarItems, findMatchingItemsWithRag, getEmbeddings, analyzeCloth, extractRelevantFeatures }
