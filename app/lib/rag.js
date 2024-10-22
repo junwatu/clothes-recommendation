@@ -1,10 +1,48 @@
 import 'data-forge-fs';
 import OpenAI from 'openai';
 import { DataFrame } from 'data-forge';
+import fs from 'node:fs/promises';
 
 const openai = new OpenAI({
 	apiKey: process.env.OPENAI_API_KEY
 })
+
+async function analyzeCloth(encodedImage, uniqueCategories) {
+	// let uniqueCategories = ['Topwear', 'Bottomwear', 'Loungewear and Nightwear', 'Shoes', 'Dress', 'Flip Flops', 'Sandal', 'Saree', 'Apparel Set', 'Free Gifts', 'Sports Equipment']
+	const response = await openai.chat.completions.create({
+		model: "gpt-4o-mini-2024-07-18",
+		messages: [
+			{
+				"role": "user",
+				"content": [
+					{
+						"type": "text",
+						"text": `Given an image of an item of clothing, analyze the item and generate a JSON output with the following fields: \"items\", \"category\", and \"gender\". Use your understanding of fashion trends, styles, and gender preferences to provide accurate and relevant suggestions for how to complete the outfit. The items field should be a list of items that would go well with the item in the picture. Each item should represent a title of an item of clothing that contains the style, color, and gender of the item. The category needs to be chosen between the types in this list: ${uniqueCategories}. \nYou have to choose between the genders in this list: [Men, Women, Boys, Girls, Unisex] Do not include the description of the item in the picture.\nExample Input: An image representing a black leather jacket. Example Output: {\"itemsRecommendation\": [\"Fitted White Women's T-shirt\", \"White Canvas Sneakers\", \"Women's Black Skinny Jeans\"], \"category\": \"Jackets\", \"gender\": \"Women\"}\n`
+					},
+					{
+						"type": "image_url",
+						"image_url": {
+							"url": `data:image/jpeg;base64,${encodedImage}`
+						}
+					}
+				]
+			},
+
+		],
+		temperature: 1,
+		max_tokens: 2048,
+		top_p: 1,
+		frequency_penalty: 0,
+		presence_penalty: 0,
+		response_format: {
+			"type": "json_object"
+		},
+	});
+
+	let features = response.choices[0].message.content
+	return features
+}
+
 
 function cosineSimilarityManual(vec1, vec2) {
 	vec1 = vec1.map(Number);
@@ -35,14 +73,19 @@ async function getEmbeddings(texts) {
 	return response.data.data.map(item => item.embedding);
 }
 
-async function findMatchingItemsWithRag(itemDescs) {
-	const dfItems = await DataFrame.readFileSync('your_data_file.csv')
+async function getDataItems() {
+	const dfItems = await DataFrame.readFileSync('data/clothes_styles_with_embeddings.csv')
 		.parseCSV()
 		.transformSeries({
 			embeddings: (embeddingStr) => JSON.parse(embeddingStr)
 		});
 
-	const embeddings = dfItems.getSeries('embeddings').toArray();
+	return dfItems
+
+}
+
+async function findMatchingItemsWithRag(itemDescs, filteredItems) {
+	const embeddings = filteredItems.getSeries('embeddings').toArray();
 	let similarItems = [];
 	for (const desc of itemDescs) {
 		const inputEmbedding = await getEmbeddings([desc]);
@@ -57,4 +100,52 @@ async function findMatchingItemsWithRag(itemDescs) {
 	return similarItems;
 }
 
-export { cosineSimilarityManual, findSimilarItems, findMatchingItemsWithRag, getEmbeddings }
+async function encodeImageToBase64(imagePath) {
+	try {
+		const imageBuffer = await fs.readFile(imagePath);
+		const base64String = imageBuffer.toString('base64');
+
+		return base64String;
+	} catch (error) {
+		if (error.code === 'ENOENT') {
+			throw new Error(`Image file not found: ${imagePath}`);
+		} else if (error.code === 'EISDIR') {
+			throw new Error(`Path is a directory, not a file: ${imagePath}`);
+		} else if (error.code === 'EACCES') {
+			throw new Error(`Permission denied accessing file: ${imagePath}`);
+		} else {
+			throw new Error(`Error encoding image: ${error.message}`);
+		}
+	}
+}
+
+async function extractRelevantFeatures() {
+	//sample cloth
+	let imagePath = 'data/images/1545.jpg';
+	const base64Image = await encodeImageToBase64(imagePath);
+
+	const df = getDataItems();
+	const uniqueSubcategories = df.getSeries('articleType').distinct().toArray();
+
+	const itemAnalysis = await analyzeCloth(base64Image, uniqueSubcategories);
+
+	let itemDescs = itemAnalysis?.itemsRecommendation
+	let itemCategory = itemAnalysis?.category
+	let itemGender = itemAnalysis?.gender
+
+	// Get styles dataframe and filter by gender and category
+	const stylesDf = await getDataItems()
+	const filteredItems = stylesDf
+		.loc(stylesDf['gender'].isin([itemGender, 'Unisex']))
+		.query(row => row['articleType'] !== itemCategory)
+
+	console.log(`${filteredItems.shape[0]} Remaining Items`)
+
+	// Find the most similar items based on the input item descriptions
+	const matchingItems = await findMatchingItemsWithRag(itemDescs, filteredItems)
+
+	return matchingItems
+
+}
+
+export { cosineSimilarityManual, findSimilarItems, findMatchingItemsWithRag, getEmbeddings, analyzeCloth }
