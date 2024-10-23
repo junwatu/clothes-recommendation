@@ -1,14 +1,12 @@
-import 'data-forge-fs';
+import { promises as fs } from 'fs'
 import OpenAI from 'openai';
-import { DataFrame } from 'data-forge';
-import fs from 'node:fs/promises';
+import { DataFrame, fromCSV } from 'data-forge';
 
 const openai = new OpenAI({
 	apiKey: process.env.OPENAI_API_KEY
 })
 
 async function analyzeCloth(encodedImage, uniqueCategories) {
-	// let uniqueCategories = ['Topwear', 'Bottomwear', 'Loungewear and Nightwear', 'Shoes', 'Dress', 'Flip Flops', 'Sandal', 'Saree', 'Apparel Set', 'Free Gifts', 'Sports Equipment']
 	const response = await openai.chat.completions.create({
 		model: "gpt-4o-mini-2024-07-18",
 		messages: [
@@ -40,9 +38,10 @@ async function analyzeCloth(encodedImage, uniqueCategories) {
 	});
 
 	let features = response.choices[0].message.content
+
+	console.log(`openAI response: ${features}`)
 	return features
 }
-
 
 function cosineSimilarityManual(vec1, vec2) {
 	vec1 = vec1.map(Number);
@@ -70,31 +69,40 @@ async function getEmbeddings(texts) {
 		input: texts,
 		encoding_format: "float"
 	});
-	return response.data.data.map(item => item.embedding);
+	let embeddings = response.data.map(data => data.embedding)
+	//console.log(`embeddings: ${embeddings}`)
+	return embeddings
 }
 
 async function getDataItems() {
-	const dfItems = await DataFrame.readFileSync('data/clothes_styles_with_embeddings.csv')
-		.parseCSV()
+	const fileContent = await fs.readFile('data/clothes_styles_with_embeddings.csv', 'utf-8')
+
+	const dfItems = await fromCSV(fileContent)
 		.transformSeries({
 			embeddings: (embeddingStr) => JSON.parse(embeddingStr)
-		});
-
+		})
 	return dfItems
 }
 
-async function findMatchingItemsWithRag(itemDescs, filteredItems) {
+async function findMatchingItemsWithRag(filteredItems, itemDescs) {
 	const embeddings = filteredItems.getSeries('embeddings').toArray();
+
 	let similarItems = [];
+
 	for (const desc of itemDescs) {
 		const inputEmbedding = await getEmbeddings([desc]);
 		const similarIndices = findSimilarItems(inputEmbedding[0], embeddings);
+
+		console.log(`similarIndices: ${similarIndices}`)
+
 		similarItems = similarItems.concat(
-			similarIndices.map(([index, similarity]) => ({
-				...dfItems.at(index),
-				similarity
-			}))
+			similarIndices.map(([index, similarity]) => {
+				const item = filteredItems.at(index);
+				if (!item || !item.id || !item.gender) return null;
+				return { ...item, similarity };
+			}).filter(Boolean)
 		);
+
 	}
 	return similarItems;
 }
@@ -119,22 +127,30 @@ async function encodeImageToBase64(imagePath) {
 }
 
 async function extractRelevantFeatures(image) {
-	const imagePath = image || 'data/images/1545.jpg';
-	const base64Image = await encodeImageToBase64(imagePath);
+	const imagePath = image || './data/images/2012.jpg'
+	const base64Image = await encodeImageToBase64(imagePath)
 
-	const df = getDataItems(); 
-	const uniqueSubcategories = df.getSeries('articleType').distinct().toArray();
+	console.log(`base64Image: ${base64Image}`)
 
-	const { itemsRecommendation: itemDescs, category: itemCategory, gender: itemGender } = await analyzeCloth(base64Image, uniqueSubcategories);
+	const df = await getDataItems()
+	const uniqueSubcategories = df.getSeries('articleType').distinct().toArray()
+
+	console.log(`uniqueSubcategories: ${uniqueSubcategories}`)
+
+	const { itemsRecommendation: itemDescs, category: itemCategory, gender: itemGender } = JSON.parse(await analyzeCloth(base64Image, uniqueSubcategories))
+
+	console.log(`itemDesc: ${itemDescs}, category: ${itemCategory}, gender: ${itemGender}`)
 
 	const filteredItems = df
-		.loc(df['gender'].isin([itemGender, 'Unisex']))
-		.query(row => row['articleType'] !== itemCategory);
+		.where(row => [itemGender, 'Unisex'].includes(row['gender']))
+		.where(row => row['articleType'] !== itemCategory)
 
-	console.log(`${filteredItems.shape[0]} Remaining Items`);
+	console.log(`${filteredItems.count()} Remaining Items`)
 
-	return await findMatchingItemsWithRag(itemDescs, filteredItems);
+
+	return await findMatchingItemsWithRag(filteredItems, itemDescs)
 }
+
 
 
 export { cosineSimilarityManual, findSimilarItems, findMatchingItemsWithRag, getEmbeddings, analyzeCloth, extractRelevantFeatures }
