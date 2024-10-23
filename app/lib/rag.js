@@ -127,7 +127,7 @@ async function encodeImageToBase64(imagePath) {
 }
 
 async function extractRelevantFeatures(image) {
-	const imagePath = image || './data/images/2012.jpg'
+	const imagePath = image || './data/images/59931.jpg'
 	const base64Image = await encodeImageToBase64(imagePath)
 
 	console.log(`base64Image: ${base64Image}`)
@@ -150,7 +150,5 @@ async function extractRelevantFeatures(image) {
 
 	return await findMatchingItemsWithRag(filteredItems, itemDescs)
 }
-
-
 
 export { cosineSimilarityManual, findSimilarItems, findMatchingItemsWithRag, getEmbeddings, analyzeCloth, extractRelevantFeatures }
