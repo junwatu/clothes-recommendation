@@ -38,7 +38,7 @@ WORKDIR /root
 
 EXPOSE 3000
 # Set permission executable for script
-RUN chmod a+x run-griddb.sh
+RUN chmod a+x run.sh
 RUN npm install
 # Run sample
-CMD ["/bin/bash", "run-griddb.sh"]
+CMD ["/bin/bash", "run.sh"]
