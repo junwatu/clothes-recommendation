@@ -126,29 +126,102 @@ async function encodeImageToBase64(imagePath) {
 	}
 }
 
-async function extractRelevantFeatures(image) {
-	const imagePath = image || './data/images/59931.jpg'
-	const base64Image = await encodeImageToBase64(imagePath)
+async function extractRelevantFeatures(image, maxRetries = 2) {
+	const imagePath = image || './data/images/6040.jpg';
+	const base64Image = await encodeImageToBase64(imagePath);
 
-	console.log(`base64Image: ${base64Image}`)
+	console.log(`base64Image: ${base64Image}`);
 
-	const df = await getDataItems()
-	const uniqueSubcategories = df.getSeries('articleType').distinct().toArray()
+	const df = await getDataItems();
+	const uniqueSubcategories = df.getSeries('articleType').distinct().toArray();
 
-	console.log(`uniqueSubcategories: ${uniqueSubcategories}`)
+	console.log(`uniqueSubcategories: ${uniqueSubcategories}`);
 
-	const { itemsRecommendation: itemDescs, category: itemCategory, gender: itemGender } = JSON.parse(await analyzeCloth(base64Image, uniqueSubcategories))
+	// Analyze the cloth to get item descriptions and category
+	const { itemsRecommendation: itemDescs, category: itemCategory, gender: itemGender } = JSON.parse(await analyzeCloth(base64Image, uniqueSubcategories));
 
-	console.log(`itemDesc: ${itemDescs}, category: ${itemCategory}, gender: ${itemGender}`)
+	console.log(`itemDesc: ${itemDescs}, category: ${itemCategory}, gender: ${itemGender}`);
 
-	const filteredItems = df
+	// Filter dataset based on category and gender
+	let filteredItems = df
 		.where(row => [itemGender, 'Unisex'].includes(row['gender']))
-		.where(row => row['articleType'] !== itemCategory)
+		.where(row => row['articleType'] !== itemCategory);
 
-	console.log(`${filteredItems.count()} Remaining Items`)
+	console.log(`${filteredItems.count()} Remaining Items`);
 
+	let recommendations = await findMatchingItemsWithRag(filteredItems, itemDescs);
 
-	return await findMatchingItemsWithRag(filteredItems, itemDescs)
+	let retries = 0;
+	while (retries <= maxRetries) {
+		for (let rec of recommendations) {
+			const suggestedImageBase64 = await encodeImageToBase64(`./data/images/${rec.id}.jpg`);
+			const matchResult = await checkMatch(base64Image, suggestedImageBase64);
+
+			if (matchResult.answer === 'yes') {
+				console.log('Matching item found:', rec);
+				return rec;
+			}
+		}
+
+		retries += 1;
+		console.log(`Retrying... (${retries}/${maxRetries})`);
+
+		if (retries <= maxRetries) {
+			// Fetch new recommendations if retries are still available
+			// Optionally: Shuffle or re-filter recommendations to get different ones
+			recommendations = await findMatchingItemsWithRag(filteredItems, itemDescs);
+		}
+	}
+
+	console.log('No valid match found after retries, returning first suggestion as fallback');
+	return recommendations[0];
 }
+
+
+async function checkMatch(referenceImageBase64, suggestedImageBase64) {
+	const response = await openai.chat.completions.create({
+		model: 'gpt-4o-mini-2024-07-18',
+		messages: [
+			{
+				role: 'user',
+				content: [
+					{
+						type: 'text',
+						text: `
+							You will be given two images of two different items of clothing. 
+							Your goal is to decide if the items in the images would work in an outfit together. 
+							The first image is the reference item (the item that the user is trying to match with another item). 
+							You need to decide if the second item would work well with the reference item. 
+							Your response must be a JSON output with the following fields: "answer", "reason". 
+							The "answer" field must be either "yes" or "no", depending on whether you think the items would work well together. 
+							The "reason" field must be a short explanation of your reasoning for your decision. Do not include the descriptions of the 2 images.
+						`,
+					},
+					{
+						type: 'image_url',
+						image_url: {
+							url: `data:image/jpeg;base64,${referenceImageBase64}`,
+						},
+					},
+					{
+						type: 'image_url',
+						image_url: {
+							url: `data:image/jpeg;base64,${suggestedImageBase64}`,
+						},
+					},
+				],
+			},
+		],
+		max_tokens: 300,
+		response_format: {
+			"type": "json_object"
+		},
+	});
+
+	const features = response.choices[0].message.content;
+	console.log(`checkMatch: ${features}`)
+	return JSON.parse(features);
+}
+
 
 export { cosineSimilarityManual, findSimilarItems, findMatchingItemsWithRag, getEmbeddings, analyzeCloth, extractRelevantFeatures }
