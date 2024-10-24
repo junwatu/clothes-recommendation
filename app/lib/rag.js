@@ -70,7 +70,6 @@ async function getEmbeddings(texts) {
 		encoding_format: "float"
 	});
 	let embeddings = response.data.map(data => data.embedding)
-	//console.log(`embeddings: ${embeddings}`)
 	return embeddings
 }
 
@@ -126,7 +125,7 @@ async function encodeImageToBase64(imagePath) {
 	}
 }
 
-async function extractRelevantFeatures(image, maxRetries = 2) {
+async function getClothRecommendations(image, maxRetries = 2) {
 	const imagePath = image || './data/images/6040.jpg';
 	const base64Image = await encodeImageToBase64(imagePath);
 
@@ -137,12 +136,10 @@ async function extractRelevantFeatures(image, maxRetries = 2) {
 
 	console.log(`uniqueSubcategories: ${uniqueSubcategories}`);
 
-	// Analyze the cloth to get item descriptions and category
 	const { itemsRecommendation: itemDescs, category: itemCategory, gender: itemGender } = JSON.parse(await analyzeCloth(base64Image, uniqueSubcategories));
 
 	console.log(`itemDesc: ${itemDescs}, category: ${itemCategory}, gender: ${itemGender}`);
 
-	// Filter dataset based on category and gender
 	let filteredItems = df
 		.where(row => [itemGender, 'Unisex'].includes(row['gender']))
 		.where(row => row['articleType'] !== itemCategory);
@@ -167,8 +164,6 @@ async function extractRelevantFeatures(image, maxRetries = 2) {
 		console.log(`Retrying... (${retries}/${maxRetries})`);
 
 		if (retries <= maxRetries) {
-			// Fetch new recommendations if retries are still available
-			// Optionally: Shuffle or re-filter recommendations to get different ones
 			recommendations = await findMatchingItemsWithRag(filteredItems, itemDescs);
 		}
 	}
@@ -176,7 +171,6 @@ async function extractRelevantFeatures(image, maxRetries = 2) {
 	console.log('No valid match found after retries, returning first suggestion as fallback');
 	return recommendations[0];
 }
-
 
 async function checkMatch(referenceImageBase64, suggestedImageBase64) {
 	const response = await openai.chat.completions.create({
@@ -223,5 +217,4 @@ async function checkMatch(referenceImageBase64, suggestedImageBase64) {
 	return JSON.parse(features);
 }
 
-
-export { cosineSimilarityManual, findSimilarItems, findMatchingItemsWithRag, getEmbeddings, analyzeCloth, extractRelevantFeatures }
+export { cosineSimilarityManual, findSimilarItems, findMatchingItemsWithRag, getEmbeddings, analyzeCloth, getClothRecommendations }
