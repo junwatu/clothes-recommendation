@@ -11,9 +11,10 @@ const ProductSelector = () => {
       color: "Red/Black",
       size: ["S", "M", "L", "XL"],
       category: "Sports Wear",
+      image: "/data/preview/1.png",
       recommendations: [
-        { id: 'r1', name: "Sports Shorts", price: 29.99, category: "Sports Wear" },
-        { id: 'r2', name: "Performance Socks", price: 12.99, category: "Sports Wear" }
+        { id: 'r1', name: "Sports Shorts Nike", price: 29.99, category: "Sports Wear", image: "/data/preview/sports-shorts-nike.png" },
+        { id: 'r2', name: "Performance Socks", price: 12.99, category: "Sports Wear", image: "/data/preview/performance-socks.png" }
       ]
     },
     {
@@ -24,9 +25,10 @@ const ProductSelector = () => {
       color: "Mint Green",
       size: ["XS", "S", "M", "L"],
       category: "Casual Wear",
+      image: "/data/preview/2.png",
       recommendations: [
-        { id: 'r3', name: "Casual Shorts", price: 34.99, category: "Casual Wear" },
-        { id: 'r4', name: "Summer Skirt", price: 39.99, category: "Casual Wear" }
+        { id: 'r3', name: "Casual Shorts", price: 34.99, category: "Casual Wear", image: "/data/preview/casual-short-woman.png" },
+        { id: 'r4', name: "Summer Skirt", price: 39.99, category: "Casual Wear", image: "/data/preview/summer-skirt.png" }
       ]
     },
     {
@@ -37,9 +39,10 @@ const ProductSelector = () => {
       color: "Navy Blue",
       size: ["M", "L", "XL", "XXL"],
       category: "Formal Wear",
+      image: "/data/preview/3.png",
       recommendations: [
-        { id: 'r5', name: "Formal Trousers", price: 69.99, category: "Formal Wear" },
-        { id: 'r6', name: "Silk Tie", price: 29.99, category: "Accessories" }
+        { id: 'r5', name: "Formal Trousers", price: 69.99, category: "Formal Wear", image: "/data/preview/formal-trouser.png" },
+        { id: 'r6', name: "Silk Tie", price: 29.99, category: "Accessories", image: "/data/preview/silk-tie.png" }
       ]
     }
   ];
@@ -58,9 +61,11 @@ const ProductSelector = () => {
               {/* Main Product Image */}
               <div className="w-1/2 max-w-md">
                 <Card className="p-4 h-96 flex items-center justify-center bg-gray-50">
-                  <div className="text-center">
-                    Selected Product Image
-                  </div>
+                  <img
+                    src={selectedProduct.image}
+                    alt={selectedProduct.name}
+                    className="object-contain w-full h-full"
+                  />
                 </Card>
                 {/* Product Details Below Image - Centered */}
                 <div className="text-center py-5">
@@ -85,9 +90,11 @@ const ProductSelector = () => {
                 {selectedProduct.recommendations.map((rec) => (
                   <Card key={rec.id} className="p-4 bg-gray-50">
                     <div className="h-32 flex items-center justify-center mb-2">
-                      <div className="text-center text-gray-500">
-                        Recommended Product Image
-                      </div>
+                      <img
+                        src={rec.image}
+                        alt={rec.name}
+                        className="object-contain w-full h-full"
+                      />
                     </div>
                     <div className="text-center">
                       <h4 className="font-medium">{rec.name}</h4>
@@ -97,8 +104,6 @@ const ProductSelector = () => {
                 ))}
               </div>
             </div>
-
-
           </div>
         </div>
       </div>
@@ -117,8 +122,12 @@ const ProductSelector = () => {
               onClick={() => setSelectedProduct(product)}
             >
               <div className="p-4 h-64 flex items-center justify-center bg-gray-50">
+                <img
+                  src={product.image}
+                  alt={product.name}
+                  className="object-contain w-full h-full"
+                />
                 <div className="text-center">
-                  Product Image
                   <div className="text-sm font-medium mt-2">{product.name}</div>
                   <div className="text-sm text-gray-500">${product.price}</div>
                 </div>
