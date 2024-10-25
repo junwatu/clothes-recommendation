@@ -1,5 +1,4 @@
-import { extractRelevantFeatures } from './lib/rag.js'
+import { getClothRecommendations } from './lib/rag.js'
 
-const styleRecommendations = await extractRelevantFeatures()
-
+const styleRecommendations = await getClothRecommendations()
 console.log(styleRecommendations)

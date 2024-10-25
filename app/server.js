@@ -2,40 +2,53 @@ import express from 'express';
 import griddb from './db/griddb.js';
 import store from './db/griddbClient.js';
 import { getOrCreateContainer, insertData, queryData, queryDataById } from './db/griddbOperations.js';
+import { getClothRecommendations } from './lib/rag.js';
 
 const app = express();
 const PORT = 3000;
 
 app.use(express.json());
-app.use(express.static('www'))
+app.use(express.static('www'));
 
 const containerName = 'myContainer';
 const columnInfoList = [
 	['id', griddb.Type.INTEGER],
-	['name', griddb.Type.STRING],
-	['value', griddb.Type.DOUBLE],
+	['image', griddb.Type.STRING],
+	['data', griddb.Type.STRING]
 ];
 
 app.get('/', async (req, res) => {
 	res.sendFile('index.html')
-})
+});
 
-app.post('/insert', async (req, res) => {
-	const { id, name, value } = req.body;
+/**
+app.post('/upload', upload.single('image'), async (req, res) => {
+	const { id } = req.body;
+	const imagePath = req.file ? req.file.path : null;
 
-	if (id == null || !name || value == null) {
-		return res.status(400).json({ error: 'Missing required fields: id, name, value' });
+	console.log(`Image Path: ${imagePath}`)
+
+	if (!imagePath) {
+		return res.status(400).json({ error: 'Missing required fields: id, image' });
 	}
 
 	try {
+		
+		// Get clothes recommendation from OpenAI and RAG
+		 
+		const response = await getClothRecommendations(imagePath);
+		console.log(response)
+
 		const container = await getOrCreateContainer(containerName, columnInfoList);
-		await insertData(container, [id, name, value]);
-		res.status(201).json({ message: 'Data inserted successfully' });
+		await insertData(container, [parseInt(id, 10), imagePath]);
+		res.status(201).json({ message: 'Image uploaded and data inserted successfully', path: imagePath });
 	} catch (err) {
-		console.error('Error in /insert:', err.message);
-		res.status(500).json({ error: 'Failed to insert data' });
+		console.error('Error in /upload:', err.message);
+		res.status(500).json({ error: 'Failed to upload image and insert data' });
 	}
 });
+
+*/
 
 app.get('/query', async (req, res) => {
 	try {
