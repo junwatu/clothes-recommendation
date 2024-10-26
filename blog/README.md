@@ -89,11 +89,32 @@ Here’s a breakdown of the components and their interactions:
 
 ### OpenAI
 
-### Node.js
+There few steps needed to setup in OpenAI. Go to your project dashboard and do these:
 
-### GridDB
+1. You need to enable two models from OpenAI:
 
-### React
+    - gpt-4o-mini
+    - text-embedding-3-large
+
+    ![models permission](images/allow-openai-models.png)
+
+2. You also need to create a key so the app can use those models:
+
+    ![setup key](images/create-dev-key.png)
+
+    And use the key in the `.env` file.
+
+### Docker
+
+For easy development and distribution, this project using docker container.
+
+#### GridDB Docker
+
+This app need a GridDB server and in this project we will use GridDB docker on ARM machine. Please check out this [blog](https://griddb.net/en/blog/griddb-on-arm-with-docker/) for instructions on how to install it.
+
+You probably need a [Docker Desktop](https://www.docker.com/products/docker-desktop/) tool for easy docker management.
+
+![griddb docker arm](images/griddb-docker-arm.png)
 
 ## **Node.js Backend**
 
