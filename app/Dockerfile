@@ -40,5 +40,6 @@ EXPOSE 3000
 # Set permission executable for script
 RUN chmod a+x run.sh
 RUN npm install
+RUN npm build
 # Run sample
 CMD ["/bin/bash", "run.sh"]
