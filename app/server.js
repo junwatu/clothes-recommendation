@@ -1,83 +1,198 @@
 import express from 'express';
-import griddb from './db/griddb.js';
-import store from './db/griddbClient.js';
-import { getOrCreateContainer, insertData, queryData, queryDataById } from './db/griddbOperations.js';
-import { getClothRecommendations } from './lib/rag.js';
+import { existsSync } from 'fs';
+import path from 'path';
 
 const app = express();
 const PORT = 3000;
 
+// Mock recommendation data
+const mockRecommendations = {
+	// Sports Wear recommendations
+	sportsWear: [
+		{
+			id: 'sr1',
+			name: 'Sports Shorts Nike Pro',
+			price: 29.99,
+			category: 'Sports Wear',
+			image: '/data/preview/sports-shorts-nike.png',
+			confidence: 0.89
+		},
+		{
+			id: 'sr2',
+			name: 'Performance Socks Pack',
+			price: 12.99,
+			category: 'Sports Wear',
+			image: '/data/preview/performance-socks.png',
+			confidence: 0.85
+		},
+		{
+			id: 'sr3',
+			name: 'Sports Cap',
+			price: 19.99,
+			category: 'Accessories',
+			image: '/data/preview/sports-cap.png',
+			confidence: 0.82
+		}
+	],
+
+	// Casual Wear recommendations
+	casualWear: [
+		{
+			id: 'cr1',
+			name: 'Casual Denim Shorts',
+			price: 34.99,
+			category: 'Casual Wear',
+			image: '/data/preview/casual-shorts.png',
+			confidence: 0.91
+		},
+		{
+			id: 'cr2',
+			name: 'Summer Skirt Floral',
+			price: 39.99,
+			category: 'Casual Wear',
+			image: '/data/preview/summer-skirt.png',
+			confidence: 0.87
+		},
+		{
+			id: 'cr3',
+			name: 'Canvas Sneakers',
+			price: 44.99,
+			category: 'Footwear',
+			image: '/data/preview/canvas-sneakers.png',
+			confidence: 0.84
+		}
+	],
+
+	// Formal Wear recommendations
+	formalWear: [
+		{
+			id: 'fr1',
+			name: 'Formal Trousers Classic',
+			price: 69.99,
+			category: 'Formal Wear',
+			image: '/data/preview/formal-trouser.png',
+			confidence: 0.93
+		},
+		{
+			id: 'fr2',
+			name: 'Silk Tie Striped',
+			price: 29.99,
+			category: 'Accessories',
+			image: '/data/preview/silk-tie.png',
+			confidence: 0.88
+		},
+		{
+			id: 'fr3',
+			name: 'Leather Belt',
+			price: 49.99,
+			category: 'Accessories',
+			image: '/data/preview/leather-belt.png',
+			confidence: 0.86
+		}
+	]
+};
+
+// Helper function to check if image exists
+const imageExists = (imagePath) => {
+	// Remove leading '/' if present
+	const cleanPath = imagePath.startsWith('/') ? imagePath.slice(1) : imagePath;
+	// Check if file exists in the specified path
+	return existsSync(path.join(process.cwd(), 'www', cleanPath));
+};
+
+// Helper function to filter recommendations based on image existence
+const filterRecommendations = (recommendations) => {
+	return recommendations.filter(item => {
+		const imageExistsFlag = imageExists(item.image);
+		if (!imageExistsFlag) {
+			console.log(`Image not found: ${item.image} for item: ${item.name}`);
+		}
+		return imageExistsFlag;
+	});
+};
+
+// Helper function to get recommendations based on product category
+const getRecommendationsByCategory = (category) => {
+	let recommendations;
+
+	switch (category.toLowerCase()) {
+		case 'sports wear':
+			recommendations = mockRecommendations.sportsWear;
+			break;
+		case 'casual wear':
+			recommendations = mockRecommendations.casualWear;
+			break;
+		case 'formal wear':
+			recommendations = mockRecommendations.formalWear;
+			break;
+		default:
+			// Return mixed recommendations if category doesn't match
+			recommendations = [
+				...mockRecommendations.sportsWear.slice(0, 1),
+				...mockRecommendations.casualWear.slice(0, 1),
+				...mockRecommendations.formalWear.slice(0, 1)
+			];
+	}
+
+	// Filter out recommendations with non-existent images
+	return filterRecommendations(recommendations);
+};
+
+// Simulate network delay
+const simulateDelay = () => new Promise(resolve => setTimeout(resolve, Math.random() * 1000 + 500));
+
 app.use(express.json());
 app.use(express.static('www'));
 
-const containerName = 'myContainer';
-const columnInfoList = [
-	['id', griddb.Type.INTEGER],
-	['image', griddb.Type.STRING],
-	['data', griddb.Type.STRING]
-];
-
+// Serve the main UI
 app.get('/', async (req, res) => {
-	res.sendFile('index.html')
+	res.sendFile('index.html');
 });
 
-/**
-app.post('/upload', upload.single('image'), async (req, res) => {
-	const { id } = req.body;
-	const imagePath = req.file ? req.file.path : null;
-
-	console.log(`Image Path: ${imagePath}`)
-
-	if (!imagePath) {
-		return res.status(400).json({ error: 'Missing required fields: id, image' });
-	}
+// Updated recommendation endpoint
+app.get('/recommendation', async (req, res) => {
+	const categoryId = req.query.categoryId;
 
 	try {
-		
-		// Get clothes recommendation from OpenAI and RAG
-		 
-		const response = await getClothRecommendations(imagePath);
-		console.log(response)
+		// Simulate API delay
+		await simulateDelay();
 
-		const container = await getOrCreateContainer(containerName, columnInfoList);
-		await insertData(container, [parseInt(id, 10), imagePath]);
-		res.status(201).json({ message: 'Image uploaded and data inserted successfully', path: imagePath });
+		const recommendations = getRecommendationsByCategory(categoryId);
+
+		console.log(recommendations)
+
+		// Simulate RAG response structure
+		const response = {
+			recommendations,
+			metadata: {
+				processedAt: new Date().toISOString(),
+				totalResults: recommendations.length,
+				category: categoryId,
+				algorithmVersion: '1.0.0'
+			}
+		};
+
+		res.status(200).json(response);
 	} catch (err) {
-		console.error('Error in /upload:', err.message);
-		res.status(500).json({ error: 'Failed to upload image and insert data' });
-	}
-});
-
-*/
-
-app.get('/query', async (req, res) => {
-	try {
-		const container = await store.getContainer(containerName);
-		const result = await queryData(container);
-		res.status(200).json({ data: result });
-	} catch (err) {
-		console.error('Error in /query:', err.message);
-		res.status(500).json({ error: 'Failed to query data' });
+		console.error('Error in /recommendation:', err.message);
+		res.status(500).json({
+			error: 'Failed to get the clothes recommendation',
+			details: err.message
+		});
 	}
 });
 
-app.get('/query/:id', async (req, res) => {
-	const { id } = req.params;
-
-	try {
-		const container = await store.getContainer(containerName);
-		const result = await queryDataById(id, container, store);
-		if (result.length > 0) {
-			res.status(200).json({ data: result });
-		} else {
-			res.status(404).json({ message: 'Data not found' });
-		}
-	} catch (err) {
-		console.error('Error in /query/:id:', err.message);
-		res.status(500).json({ error: 'Failed to query data by ID' });
-	}
+// Error handling middleware
+app.use((err, req, res, next) => {
+	console.error(err.stack);
+	res.status(500).json({
+		error: 'Something broke!',
+		details: err.message
+	});
 });
 
 app.listen(PORT, () => {
 	console.log(`Server is running on http://localhost:${PORT}`);
 });
+
+export default app;
