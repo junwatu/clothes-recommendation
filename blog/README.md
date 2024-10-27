@@ -23,19 +23,19 @@
 
 ## **Introduction**
 
-Clothes recommendation is an important feature in any e-commerce solution. It gives personalized shopping experiences in fashion and by using AI-driven solutions will enhance that experiences.
+Clothes recommendation is an important feature in any e-commerce solution. It gives personalized shopping experiences in fashion and using AI-driven solutions will enhance those experiences.
 
-In this article, we will use the GPT-4o mini model to analyzing images of clothing and extract it's colors and styles. With these information we can acurrately identify the characteristic of the input clothing item and complement the identified features with our knowledge base using RAG technique.
+In this article, we will use the GPT-4o mini model to analyze images of clothing and extract its colors and styles. With this information, we can accurately identify the characteristics of the input clothing item and complement the identified features with our knowledge base using the RAG technique.
 
 ## **Understanding Retrieval-Augmented Generation (RAG)**
 
-Retrieval-Augmented Generation (RAG) enhances large language models (LLMs) by using external knowledge bases for more accurate responses. LLMs, trained on vast data with billions of parameters, perform tasks like answering questions or translations. RAG improves this by enabling the model to access specific domains or internal data without retraining.
+Retrieval-augmented generation (RAG) enhances large language models (LLMs) by using external knowledge bases for more accurate responses. LLMs, trained on vast data with billions of parameters, perform tasks like answering questions or translations. RAG improves this by enabling the model to access specific domains or internal data without retraining.
 
 ## How Does RAG Work?
 
-Without RAG, the LLM takes the user input and creates a response based on information it was trained on—or what it already knows.
+Without RAG, the LLM takes the user input and creates a response based on the information it was trained on—or what it already knows.
 
-With RAG, an information retrieval component is introduced that utilizes the user input to first pull information from a new knowledge source. The user query and the relevant information are both given to the LLM. The LLM uses the new knowledge and its training data to generate a better text responses.
+With RAG, an information retrieval component is introduced that utilizes the user input to first pull information from a new knowledge source. The user query and the relevant information are both given to the LLM. The LLM uses the new knowledge and its training data to generate a better text response.
 
 ![RAG simple diagram](images/rag.jpg)
 
@@ -76,7 +76,7 @@ Here’s a breakdown of the components and their interactions:
 
 **OpenAI (Text Embedding + GPT-4.0 Mini)**:
 
-- The **Text Embedding** model is used to generate vector representations of the prompt and any retrieved context, making it easier to match user queries with relevant data.
+- The **Text Embedding** model is used to generate vector representations of the prompt and any retrieved-context, making it easier to match user queries with relevant data.
 - **GPT-4.0 Mini** (a smaller variant of GPT-4) processes the **prompt, query, and enhanced context** together to generate tailored recommendations.
 - This step enables the system to provide more personalized and context-aware recommendations based on both user input and the data fetched from GridDB.
 
@@ -88,7 +88,7 @@ Here’s a breakdown of the components and their interactions:
 
 ### OpenAI
 
-There few steps needed to setup in OpenAI. Go to your project dashboard and do these steps:
+There few steps needed to set up on OpenAI. Go to your project dashboard and do these steps:
 
 1. You need to enable two models from OpenAI:
 
@@ -101,21 +101,21 @@ There few steps needed to setup in OpenAI. Go to your project dashboard and do t
 
     ![setup key](images/create-dev-key.png)
 
-    And use the key in the `.env` file.
+    Use the key in the `.env` file. This file will be ignored from the repository.
 
 ### Docker
 
-For easy development and distribution, this project using docker container to "package" the application. For easy Docker instalation, use the [Docker Desktop](https://www.docker.com/products/docker-desktop/) tool.
+For easy development and distribution, this project uses a docker container to "package" the application. For easy Docker installation, use the [Docker Desktop](https://www.docker.com/products/docker-desktop/) tool.
 
 #### GridDB Docker
 
-This app need a GridDB server and should be running before the app. In this project we will use the GridDB docker for ARM machine.  For instructions on how to install it, please check out this [blog](https://griddb.net/en/blog/griddb-on-arm-with-docker/).
+This app needs a GridDB server and should be running before the app. In this project, we will use the GridDB docker for ARM machines.  For instructions on how to install it, please check out this [blog](https://griddb.net/en/blog/griddb-on-arm-with-docker/).
 
 ![griddb docker arm](images/griddb-docker-arm.png)
 
 ### Node.js
 
-> This is needed for the project development. However, if you just want to [run the project](#run-the-project), you dont have to install it.
+> This is needed for the project development. However, if you just want to [run the project](#run-the-project), you don't have to install it.
 
 Install Node.js from [here](https://nodejs.org/en/download). For this project, we will use the `nvm` package manager and Node.js v16.20.2
 LTS version.
@@ -147,7 +147,7 @@ Make sure the GridDB docker is running. To check it, you can use this command:
 docker ps | grep griddb-server
 ```
 
-If the GridDB is running, you will have a simillar response to this:
+If the GridDB is running, you will have a similar response to this:
 
 ```shell
 fcace9e13b5f   griddbnet/griddb:arm-5.5.0      "/bin/bash /start-gr…"   3 weeks ago   Up 20 hours   0.0.0.0:10001->10001/tcp   griddb-server
@@ -161,7 +161,7 @@ Clone the app source code from this [repository](https://github.com/junwatu/clot
 git clone https://github.com/junwatu/clothes-recommendation.git
 ```
 
-Change directory into the `app` folder and dockerize the app:
+Change the directory into the `app` folder and dockerize the app:
 
 ```shell
 cd app
@@ -170,19 +170,19 @@ docker build -t nodejs-clothes-recommendation .
 
 ### 3. Run Docker
 
-Run the docker app using this command (you need to adjust the GridDB clustername, username, and password if these has different values):
+Run the docker app using this command (you need to adjust the GridDB cluster name, username, and password if these have different values):
 
 ```shell
 docker run --name clothes-rag-griddb --network griddb-net -e GRIDDB_CLUSTER_NAME=myCluster -e GRIDDB_USERNAME=admin -e GRIDDB_PASSWORD=admin -e IP_NOTIFICATION_MEMBER=griddb-server:10001 -p 3000:3000 nodejs-clothes-recommendation
 ```
 
-Also, by using the Docker Desktop you can easily check if the GridDB and the docker app is running or not.
+Also, by using the Docker Desktop you can easily check if the GridDB and the Docker app are running or not.
 
 ![docker apps](images/app-is-running.png)
 
 ## **Node.js Backend**
 
-This app use Node.js as the backend server. It serve user interface files and process the recommendation for the selected product.
+This app uses Node.js as the backend server. It serves user interface files and processes the recommendation for the selected product.
 
 
 ## **Data Management with GridDB**
