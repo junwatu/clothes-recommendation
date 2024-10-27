@@ -182,7 +182,8 @@ Also, by using the Docker Desktop you can easily check if the GridDB and the Doc
 
 ## **Node.js Backend**
 
-This app uses Node.js as the backend server. It serves user interface files and processes the recommendation for the selected product.
+This app uses Node.js as the backend server. It serves user interface files and processes the AI recommendation for the selected product.
+
 
 
 ## **Data Management with GridDB**
