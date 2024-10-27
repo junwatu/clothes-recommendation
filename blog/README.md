@@ -170,7 +170,7 @@ docker build -t nodejs-clothes-recommendation .
 
 ### 3. Run Docker
 
-Run the docker app using this command (you need to adjust the GridDB clustername, username, and password if different from the default values):
+Run the docker app using this command (you need to adjust the GridDB clustername, username, and password if these has different values):
 
 ```shell
 docker run --name clothes-rag-griddb --network griddb-net -e GRIDDB_CLUSTER_NAME=myCluster -e GRIDDB_USERNAME=admin -e GRIDDB_PASSWORD=admin -e IP_NOTIFICATION_MEMBER=griddb-server:10001 -p 3000:3000 nodejs-clothes-recommendation
@@ -182,7 +182,8 @@ Also, by using the Docker Desktop you can easily check if the GridDB and the doc
 
 ## **Node.js Backend**
 
-This app use Node.js as the backend server.
+This app use Node.js as the backend server. It serve user interface files and process the recommendation for the selected product.
+
 
 ## **Data Management with GridDB**
 
