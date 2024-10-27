@@ -1,5 +1,5 @@
 import express from 'express';
-import { existsSync } from 'fs';
+import { promises as fs } from 'fs';
 import path from 'path';
 
 const app = express();
@@ -92,27 +92,36 @@ const mockRecommendations = {
 	]
 };
 
-// Helper function to check if image exists
-const imageExists = (imagePath) => {
-	// Remove leading '/' if present
-	const cleanPath = imagePath.startsWith('/') ? imagePath.slice(1) : imagePath;
-	// Check if file exists in the specified path
-	return existsSync(path.join(process.cwd(), 'www', cleanPath));
+const imageExists = async (imagePath) => {
+	try {
+		// Remove leading '/' if present
+		const cleanPath = imagePath.startsWith('/') ? imagePath.slice(1) : imagePath;
+// Check if file exists in the specified path
+		await fs.access(path.join(process.cwd(), 'public', cleanPath));
+		return true;
+	} catch {
+		console.log(`Image not found: ${imagePath}`);
+		return false;
+	}
 };
+
 
 // Helper function to filter recommendations based on image existence
-const filterRecommendations = (recommendations) => {
-	return recommendations.filter(item => {
-		const imageExistsFlag = imageExists(item.image);
-		if (!imageExistsFlag) {
-			console.log(`Image not found: ${item.image} for item: ${item.name}`);
-		}
-		return imageExistsFlag;
-	});
-};
+const filterRecommendations = async (recommendations) => {
+	// Use Promise.all to check all images in parallel
+	const checkResults = await Promise.all(
+		recommendations.map(async (item) => {
+			const imageExistsFlag = await imageExists(item.image);
+			return { ...item, imageExists: imageExistsFlag };
+		})
+	);
+
+	// Filter out items with non-existent images
+	return checkResults.filter(item => item.imageExists).map(({ imageExists, ...item }) => item);
+}
 
 // Helper function to get recommendations based on product category
-const getRecommendationsByCategory = (category) => {
+const getRecommendationsByCategory = async (category) => {
 	let recommendations;
 
 	switch (category.toLowerCase()) {
@@ -135,7 +144,7 @@ const getRecommendationsByCategory = (category) => {
 	}
 
 	// Filter out recommendations with non-existent images
-	return filterRecommendations(recommendations);
+	return await filterRecommendations(recommendations);
 };
 
 // Simulate network delay
@@ -157,7 +166,7 @@ app.get('/recommendation', async (req, res) => {
 		// Simulate API delay
 		await simulateDelay();
 
-		const recommendations = getRecommendationsByCategory(categoryId);
+		const recommendations = await getRecommendationsByCategory(categoryId);
 
 		console.log(recommendations)
 
