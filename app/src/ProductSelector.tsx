@@ -1,8 +1,103 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card } from '../components/ui/card';
+import { Skeleton } from '../components/ui/skeleton';
+
+// Custom hook for fetching recommendations
+const useProductRecommendations = (categoryId: string) => {
+  const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [metadata, setMetadata] = useState<RecommendationMetadata | null>(null);
+
+  useEffect(() => {
+    const fetchRecommendations = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const response = await fetch(`/recommendation?categoryId=${categoryId}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch recommendations');
+        }
+        const data = await response.json();
+        setRecommendations(data.recommendations);
+        setMetadata(data.metadata);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'An error occurred');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (categoryId) {
+      fetchRecommendations();
+    }
+  }, [categoryId]);
+
+  return { recommendations, metadata, loading, error };
+};
+
+// Types
+interface RecommendationMetadata {
+  processedAt: string;
+  totalResults: number;
+  category: string;
+  algorithmVersion: string;
+}
+
+interface Recommendation {
+  id: string;
+  name: string;
+  price: number;
+  category: string;
+  image: string;
+  confidence: number;
+}
+
+interface Product {
+  id: number;
+  name: string;
+  description: string;
+  price: number;
+  color: string;
+  size: string[];
+  category: string;
+  image: string;
+  thumbnail: string;
+}
+
+// Recommendation card component with confidence score
+const RecommendationCard = ({ recommendation }: { recommendation: Recommendation }) => (
+  <Card className="p-4 bg-gray-50 relative">
+    <div className="absolute top-2 right-2 bg-blue-500 text-white text-xs px-2 py-1 rounded-full">
+      {(recommendation.confidence * 100).toFixed(0)}% match
+    </div>
+    <div className="h-32 flex items-center justify-center mb-2">
+      <img
+        src={recommendation.image}
+        alt={recommendation.name}
+        className="object-contain w-full h-full"
+      />
+    </div>
+    <div className="text-center">
+      <h4 className="font-medium text-sm">{recommendation.name}</h4>
+      <p className="text-blue-600 font-bold mt-1">${recommendation.price.toFixed(2)}</p>
+    </div>
+  </Card>
+);
+
+// Loading skeleton for recommendations
+const RecommendationSkeleton = () => (
+  <Card className="p-4 bg-gray-50">
+    <Skeleton className="h-32 w-full mb-2" />
+    <div className="space-y-2">
+      <Skeleton className="h-4 w-3/4 mx-auto" />
+      <Skeleton className="h-4 w-1/4 mx-auto" />
+    </div>
+  </Card>
+);
 
 const ProductSelector = () => {
-  const products = [
+  const products: Product[] = [
     {
       id: 1,
       name: "Striped Sports Jersey",
@@ -12,10 +107,7 @@ const ProductSelector = () => {
       size: ["S", "M", "L", "XL"],
       category: "Sports Wear",
       image: "/data/preview/1.png",
-      recommendations: [
-        { id: 'r1', name: "Sports Shorts Nike", price: 29.99, category: "Sports Wear", image: "/data/preview/sports-shorts-nike.png" },
-        { id: 'r2', name: "Performance Socks", price: 12.99, category: "Sports Wear", image: "/data/preview/performance-socks.png" }
-      ]
+      thumbnail: "/data/preview/1-small.jpeg",
     },
     {
       id: 2,
@@ -26,10 +118,7 @@ const ProductSelector = () => {
       size: ["XS", "S", "M", "L"],
       category: "Casual Wear",
       image: "/data/preview/2.png",
-      recommendations: [
-        { id: 'r3', name: "Casual Shorts", price: 34.99, category: "Casual Wear", image: "/data/preview/casual-short-woman.png" },
-        { id: 'r4', name: "Summer Skirt", price: 39.99, category: "Casual Wear", image: "/data/preview/summer-skirt.png" }
-      ]
+      thumbnail: "/data/preview/2-small.jpeg",
     },
     {
       id: 3,
@@ -40,14 +129,12 @@ const ProductSelector = () => {
       size: ["M", "L", "XL", "XXL"],
       category: "Formal Wear",
       image: "/data/preview/3.png",
-      recommendations: [
-        { id: 'r5', name: "Formal Trousers", price: 69.99, category: "Formal Wear", image: "/data/preview/formal-trouser.png" },
-        { id: 'r6', name: "Silk Tie", price: 29.99, category: "Accessories", image: "/data/preview/silk-tie.png" }
-      ]
+      thumbnail: "/data/preview/3-small.jpeg"
     }
   ];
 
   const [selectedProduct, setSelectedProduct] = useState(products[0]);
+  const { recommendations, metadata, loading, error } = useProductRecommendations(selectedProduct.category);
 
   return (
     <div className="max-w-6xl mx-auto p-6">
@@ -86,22 +173,31 @@ const ProductSelector = () => {
               </div>
 
               {/* Recommendations Column */}
-              <div className="w-1/3 space-y-4">
-                {selectedProduct.recommendations.map((rec) => (
-                  <Card key={rec.id} className="p-4 bg-gray-50">
-                    <div className="h-32 flex items-center justify-center mb-2">
-                      <img
-                        src={rec.image}
-                        alt={rec.name}
-                        className="object-contain w-full h-full"
-                      />
+              <div className="w-1/3">
+                <h3 className="text-lg font-semibold mb-4">Recommended for you</h3>
+                {metadata && (
+                  <p className="text-sm text-gray-500 mb-4">
+                    {metadata.totalResults} items found in {metadata.category}
+                  </p>
+                )}
+                <div className="space-y-4">
+                  {error && (
+                    <div className="text-red-500 text-center p-4">
+                      Failed to load recommendations
                     </div>
-                    <div className="text-center">
-                      <h4 className="font-medium">{rec.name}</h4>
-                      <p className="text-blue-600 font-bold mt-1">${rec.price}</p>
-                    </div>
-                  </Card>
-                ))}
+                  )}
+                  {loading ? (
+                    <>
+                      <RecommendationSkeleton />
+                      <RecommendationSkeleton />
+                      <RecommendationSkeleton />
+                    </>
+                  ) : (
+                    recommendations.map((rec) => (
+                      <RecommendationCard key={rec.id} recommendation={rec} />
+                    ))
+                  )}
+                </div>
               </div>
             </div>
           </div>
