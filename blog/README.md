@@ -4,20 +4,22 @@
 
 ## Table of Contents
 
-- [**Clothes Recommendation System Using OpenAI \& RAG**](#clothes-recommendation-system-using-openai--rag)
-  - [**Introduction**](#introduction)
-  - [**Understanding Retrieval-Augmented Generation (RAG)**](#understanding-retrieval-augmented-generation-rag)
-  - [**How Does RAG Work**?](#how-does-rag-work)
-  - [**Advantages of OpenAI \& RAG in Fashion**](#advantages-of-openai--rag-in-fashion)
-  - [**System Architecture**](#system-architecture)
-  - [**Prerequisites**](#prerequisites)
-    - [**OpenAI**](#openai)
-    - [**Docker**](#docker)
-  - [**Node.js Backend**](#nodejs-backend)
-  - [**Data Management with GridDB**](#data-management-with-griddb)
-  - [**Building User Interface**](#building-user-interface)
-  - [**Demo**](#demo)
-  - [**Further Enhancements**](#further-enhancements)
+- [Clothes Recommendation System Using OpenAI \& RAG](#clothes-recommendation-system-using-openai--rag)
+  - [Introduction](#introduction)
+  - [Understanding Retrieval-Augmented Generation (RAG)](#understanding-retrieval-augmented-generation-rag)
+  - [How Does RAG Work?](#how-does-rag-work)
+  - [Advantages of OpenAI \& RAG in Fashion](#advantages-of-openai--rag-in-fashion)
+  - [System Architecture](#system-architecture)
+  - [Prerequisites](#prerequisites)
+    - [OpenAI](#openai)
+    - [Docker](#docker)
+    - [Node.js](#nodejs)
+  - [Run The Project](#run-the-project)
+  - [Node.js Backend](#nodejs-backend)
+  - [Data Management with GridDB](#data-management-with-griddb)
+  - [Building User Interface](#building-user-interface)
+  - [Demo](#demo)
+  - [Further Enhancements](#further-enhancements)
 
 ## **Introduction**
 
@@ -138,9 +140,22 @@ To connect Node.js and GridDB database, you need the [gridb-node-api](https://gi
 
 ### 1. Check the GridDB
 
+Make sure the GridDB docker is running. To check it, you can use this command:
+
+```shell
+# Check container status
+docker ps | grep griddb-server
+```
+
+If the GridDB is running, you will have a simillar response to this:
+
+```shell
+fcace9e13b5f   griddbnet/griddb:arm-5.5.0      "/bin/bash /start-gr…"   3 weeks ago   Up 20 hours   0.0.0.0:10001->10001/tcp   griddb-server
+```
+
 ### 2. Clone the App
 
-Clone the app source code ßfrom this [repository](https://github.com/junwatu/clothes-recommendation):
+Clone the app source code from this [repository](https://github.com/junwatu/clothes-recommendation):
 
 ```shell
 git clone https://github.com/junwatu/clothes-recommendation.git
@@ -155,17 +170,19 @@ docker build -t nodejs-clothes-recommendation .
 
 ### 3. Run Docker
 
-Run the docker app using this command (you need to adjust the GridDB clustername, username, and password if necessary):
+Run the docker app using this command (you need to adjust the GridDB clustername, username, and password if different from the default values):
 
 ```shell
 docker run --name clothes-rag-griddb --network griddb-net -e GRIDDB_CLUSTER_NAME=myCluster -e GRIDDB_USERNAME=admin -e GRIDDB_PASSWORD=admin -e IP_NOTIFICATION_MEMBER=griddb-server:10001 -p 3000:3000 nodejs-clothes-recommendation
 ```
 
-By using the Docker Desktop you can easily check if the GridDB and the docker app is running or not.
+Also, by using the Docker Desktop you can easily check if the GridDB and the docker app is running or not.
 
 ![docker apps](images/app-is-running.png)
 
 ## **Node.js Backend**
+
+This app use Node.js as the backend server.
 
 ## **Data Management with GridDB**
 
