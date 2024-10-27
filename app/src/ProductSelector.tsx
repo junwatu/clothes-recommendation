@@ -86,14 +86,18 @@ const RecommendationCard = ({ recommendation }: { recommendation: Recommendation
 );
 
 // Loading skeleton for recommendations
-const RecommendationSkeleton = () => (
-  <Card className="p-4 bg-gray-50">
-    <Skeleton className="h-32 w-full mb-2" />
-    <div className="space-y-2">
-      <Skeleton className="h-4 w-3/4 mx-auto" />
-      <Skeleton className="h-4 w-1/4 mx-auto" />
-    </div>
-  </Card>
+const RecommendationSkeleton = ({ count = 1 }: { count?: number }) => (
+  <>
+    {Array.from({ length: count }).map((_, index) => (
+      <Card key={index} className="p-4 bg-gray-50">
+        <Skeleton className="h-32 w-full mb-2" />
+        <div className="space-y-2">
+          <Skeleton className="h-4 w-3/4 mx-auto" />
+          <Skeleton className="h-4 w-1/4 mx-auto" />
+        </div>
+      </Card>
+    ))}
+  </>
 );
 
 const ProductSelector = () => {
@@ -187,11 +191,9 @@ const ProductSelector = () => {
                     </div>
                   )}
                   {loading ? (
-                    <>
-                      <RecommendationSkeleton />
-                      <RecommendationSkeleton />
-                      <RecommendationSkeleton />
-                    </>
+                    <RecommendationSkeleton
+                      count={metadata?.totalResults || recommendations.length || 3}
+                    />
                   ) : (
                     recommendations.map((rec) => (
                       <RecommendationCard key={rec.id} recommendation={rec} />
