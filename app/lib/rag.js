@@ -1,6 +1,6 @@
 import { promises as fs } from 'fs'
 import OpenAI from 'openai';
-import { DataFrame, fromCSV } from 'data-forge';
+import { fromCSV } from 'data-forge';
 
 const openai = new OpenAI({
 	apiKey: process.env.OPENAI_API_KEY

@@ -3,7 +3,6 @@ import { Card } from '../components/ui/card';
 import { Skeleton } from '../components/ui/skeleton';
 import RecommendationCard from '../src/RecommendationCard';
 
-// Types
 interface RecommendationMetadata {
   processedAt: string;
   totalResults: number;
