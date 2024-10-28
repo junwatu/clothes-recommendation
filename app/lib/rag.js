@@ -217,4 +217,4 @@ async function checkMatch(referenceImageBase64, suggestedImageBase64) {
 	return JSON.parse(features);
 }
 
-export { cosineSimilarityManual, findSimilarItems, findMatchingItemsWithRag, getEmbeddings, analyzeCloth, getClothRecommendations }
+export { getClothRecommendations }
