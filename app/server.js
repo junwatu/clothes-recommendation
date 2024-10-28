@@ -5,6 +5,15 @@ import path from 'path';
 const app = express();
 const PORT = 3000;
 
+app.use(express.json());
+app.use(express.static('www'));
+
+// Serve the main UI
+app.get('/', async (req, res) => {
+	res.sendFile('index.html');
+});
+
+
 // Mock recommendation data
 const mockRecommendations = {
 	// Sports Wear recommendations
@@ -121,8 +130,11 @@ const filterRecommendations = async (recommendations) => {
 }
 
 // Helper function to get recommendations based on product category
-const getRecommendationsByCategory = async (category) => {
+const getRecommendationsByCategory = async (product) => {
 	let recommendations;
+	const { category, price } = product;
+
+	console.log(product)
 
 	switch (category.toLowerCase()) {
 		case 'sports wear':
@@ -150,23 +162,22 @@ const getRecommendationsByCategory = async (category) => {
 // Simulate network delay
 const simulateDelay = () => new Promise(resolve => setTimeout(resolve, Math.random() * 1000 + 500));
 
-app.use(express.json());
-app.use(express.static('www'));
-
-// Serve the main UI
-app.get('/', async (req, res) => {
-	res.sendFile('index.html');
-});
-
 // Updated recommendation endpoint
-app.get('/recommendation', async (req, res) => {
-	const categoryId = req.query.categoryId;
+app.post('/recommendation', async (req, res) => {
+	const { product } = req.body;
+
+	if (!product) {
+		return res.status(400).json({
+			error: 'Missing product data',
+			details: 'Request body must include a product object'
+		});
+	}
 
 	try {
 		// Simulate API delay
 		await simulateDelay();
 
-		const recommendations = await getRecommendationsByCategory(categoryId);
+		const recommendations = await getRecommendationsByCategory(product);
 
 		console.log(recommendations)
 
@@ -176,8 +187,13 @@ app.get('/recommendation', async (req, res) => {
 			metadata: {
 				processedAt: new Date().toISOString(),
 				totalResults: recommendations.length,
-				category: categoryId,
-				algorithmVersion: '1.0.0'
+				category: product.category,
+				algorithmVersion: '1.0.0',
+				basedOn: {
+					productId: product.id,
+					productName: product.name,
+					priceRange: `$${(product.price * 0.5).toFixed(2)} - $${(product.price * 1.5).toFixed(2)}`
+				}
 			}
 		};
 

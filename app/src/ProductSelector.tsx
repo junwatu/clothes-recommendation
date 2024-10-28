@@ -2,40 +2,6 @@ import { useState, useEffect } from 'react';
 import { Card } from '../components/ui/card';
 import { Skeleton } from '../components/ui/skeleton';
 
-// Custom hook for fetching recommendations
-const useProductRecommendations = (categoryId: string) => {
-  const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [metadata, setMetadata] = useState<RecommendationMetadata | null>(null);
-
-  useEffect(() => {
-    const fetchRecommendations = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const response = await fetch(`/recommendation?categoryId=${categoryId}`);
-        if (!response.ok) {
-          throw new Error('Failed to fetch recommendations');
-        }
-        const data = await response.json();
-        setRecommendations(data.recommendations);
-        setMetadata(data.metadata);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'An error occurred');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (categoryId) {
-      fetchRecommendations();
-    }
-  }, [categoryId]);
-
-  return { recommendations, metadata, loading, error };
-};
-
 // Types
 interface RecommendationMetadata {
   processedAt: string;
@@ -64,6 +30,60 @@ interface Product {
   image: string;
   thumbnail: string;
 }
+
+// Custom hook for fetching recommendations
+const useProductRecommendations = (product: Product) => {
+  const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [metadata, setMetadata] = useState<RecommendationMetadata | null>(null);
+
+  useEffect(() => {
+    const fetchRecommendations = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const response = await fetch(`/recommendation`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            product: {
+              id: product.id,
+              name: product.name,
+              description: product.description,
+              price: product.price,
+              color: product.color,
+              size: product.size,
+              category: product.category,
+              image: product.image,
+              thumbnail: product.thumbnail,
+            }
+          })
+        });
+        if (!response.ok) {
+          throw new Error('Failed to fetch recommendations');
+        }
+        const data = await response.json();
+        setRecommendations(data.recommendations);
+        setMetadata(data.metadata);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'An error occurred');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (product) {
+      fetchRecommendations();
+    }
+  }, [product]);
+
+  return { recommendations, metadata, loading, error };
+};
+
+
 
 // Recommendation card component with confidence score
 const RecommendationCard = ({ recommendation }: { recommendation: Recommendation }) => (
@@ -138,7 +158,7 @@ const ProductSelector = () => {
   ];
 
   const [selectedProduct, setSelectedProduct] = useState(products[0]);
-  const { recommendations, metadata, loading, error } = useProductRecommendations(selectedProduct.category);
+  const { recommendations, metadata, loading, error } = useProductRecommendations(selectedProduct);
 
   return (
     <div className="max-w-6xl mx-auto p-6">
