@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Card } from '../components/ui/card';
 import { Skeleton } from '../components/ui/skeleton';
+import RecommendationCard from '../src/RecommendationCard';
 
 // Types
 interface RecommendationMetadata {
@@ -12,11 +13,15 @@ interface RecommendationMetadata {
 
 interface Recommendation {
   id: string;
-  name: string;
-  price: number;
-  category: string;
-  image: string;
-  confidence: number;
+  productDisplayName: string;
+  articleType: string;
+  baseColour: string;
+  masterCategory: string;
+  subCategory: string;
+  gender: string;
+  season: string;
+  year: string;
+  similarity: number;
 }
 
 interface Product {
@@ -66,6 +71,7 @@ const useProductRecommendations = (product: Product) => {
           throw new Error('Failed to fetch recommendations');
         }
         const data = await response.json();
+
         setRecommendations(data.recommendations);
         setMetadata(data.metadata);
       } catch (err) {
@@ -82,28 +88,6 @@ const useProductRecommendations = (product: Product) => {
 
   return { recommendations, metadata, loading, error };
 };
-
-
-
-// Recommendation card component with confidence score
-const RecommendationCard = ({ recommendation }: { recommendation: Recommendation }) => (
-  <Card className="p-4 bg-gray-50 relative">
-    <div className="absolute top-2 right-2 bg-blue-500 text-white text-xs px-2 py-1 rounded-full">
-      {(recommendation.confidence * 100).toFixed(0)}% match
-    </div>
-    <div className="h-32 flex items-center justify-center mb-2">
-      <img
-        src={recommendation.image}
-        alt={recommendation.name}
-        className="object-contain w-full h-full"
-      />
-    </div>
-    <div className="text-center">
-      <h4 className="font-medium text-sm">{recommendation.name}</h4>
-      <p className="text-blue-600 font-bold mt-1">${recommendation.price.toFixed(2)}</p>
-    </div>
-  </Card>
-);
 
 // Loading skeleton for recommendations
 const RecommendationSkeleton = ({ count = 1 }: { count?: number }) => (
@@ -131,7 +115,7 @@ const ProductSelector = () => {
       size: ["S", "M", "L", "XL"],
       category: "Sports Wear",
       image: "/data/preview/1.png",
-      thumbnail: "/data/preview/1-small.jpeg",
+      thumbnail: "data/preview/1-small.jpeg",
     },
     {
       id: 2,
@@ -142,7 +126,7 @@ const ProductSelector = () => {
       size: ["XS", "S", "M", "L"],
       category: "Casual Wear",
       image: "/data/preview/2.png",
-      thumbnail: "/data/preview/2-small.jpeg",
+      thumbnail: "data/preview/2-small.jpeg",
     },
     {
       id: 3,
@@ -153,7 +137,7 @@ const ProductSelector = () => {
       size: ["M", "L", "XL", "XXL"],
       category: "Formal Wear",
       image: "/data/preview/3.png",
-      thumbnail: "/data/preview/3-small.jpeg"
+      thumbnail: "data/preview/3-small.jpeg"
     }
   ];
 
@@ -210,13 +194,26 @@ const ProductSelector = () => {
                       Failed to load recommendations
                     </div>
                   )}
+
                   {loading ? (
-                    <RecommendationSkeleton
-                      count={metadata?.totalResults || recommendations.length || 3}
+                    <RecommendationCard
+                      recommendation={recommendations[0] || {
+                        id: '',
+                        productDisplayName: '',
+                        articleType: '',
+                        baseColour: '',
+                        masterCategory: '',
+                        subCategory: '',
+                        gender: '',
+                        season: '',
+                        year: '',
+                        similarity: 0
+                      }}
+                      isLoading={true}
                     />
                   ) : (
                     recommendations.map((rec) => (
-                      <RecommendationCard key={rec.id} recommendation={rec} />
+                      <RecommendationCard key={rec.id} recommendation={rec} isLoading={false} />
                     ))
                   )}
                 </div>

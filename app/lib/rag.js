@@ -15,7 +15,7 @@ async function analyzeCloth(encodedImage, uniqueCategories) {
 				"content": [
 					{
 						"type": "text",
-						"text": `Given an image of an item of clothing, analyze the item and generate a JSON output with the following fields: \"items\", \"category\", and \"gender\". Use your understanding of fashion trends, styles, and gender preferences to provide accurate and relevant suggestions for how to complete the outfit. The items field should be a list of items that would go well with the item in the picture. Each item should represent a title of an item of clothing that contains the style, color, and gender of the item. The category needs to be chosen between the types in this list: ${uniqueCategories}. \nYou have to choose between the genders in this list: [Men, Women, Boys, Girls, Unisex] Do not include the description of the item in the picture.\nExample Input: An image representing a black leather jacket. Example Output: {\"itemsRecommendation\": [\"Fitted White Women's T-shirt\", \"White Canvas Sneakers\", \"Women's Black Skinny Jeans\"], \"category\": \"Jackets\", \"gender\": \"Women\"}\n`
+						"text": `Given an image of an item of clothing, analyze the item and generate a JSON output with the following fields: \"items\", \"category\", and \"gender\". Use your understanding of fashion trends, styles, and gender preferences to provide accurate and relevant suggestions for how to complete the outfit. The items field should be a list of items that would go well with the item in the picture. Each item should represent a title of an item of clothing that contains the style, color, and gender of the item. The category needs to be chosen between the types in this list: ${uniqueCategories}. \nYou have to choose between the genders in this list: [Men, Women, Boys, Girls, Unisex] Do not include the description of the item in the picture.\nExample Input: An image representing a black leather jacket. Example Output: {\"items\": [\"Fitted White Women's T-shirt\", \"White Canvas Sneakers\", \"Women's Black Skinny Jeans\"], \"category\": \"Jackets\", \"gender\": \"Women\"}\n`
 					},
 					{
 						"type": "image_url",
@@ -126,7 +126,7 @@ async function encodeImageToBase64(imagePath) {
 }
 
 async function getClothRecommendations(image, maxRetries = 2) {
-	const imagePath = image || './data/images/6040.jpg';
+	const imagePath = image || './public/data/images/6040.jpg';
 	const base64Image = await encodeImageToBase64(imagePath);
 
 	console.log(`base64Image: ${base64Image}`);
@@ -136,9 +136,9 @@ async function getClothRecommendations(image, maxRetries = 2) {
 
 	console.log(`uniqueSubcategories: ${uniqueSubcategories}`);
 
-	const { itemsRecommendation: itemDescs, category: itemCategory, gender: itemGender } = JSON.parse(await analyzeCloth(base64Image, uniqueSubcategories));
+	const { items: itemDescs, category: itemCategory, gender: itemGender } = JSON.parse(await analyzeCloth(base64Image, uniqueSubcategories));
 
-	console.log(`itemDesc: ${itemDescs}, category: ${itemCategory}, gender: ${itemGender}`);
+	console.log(`items: ${itemDescs}, category: ${itemCategory}, gender: ${itemGender}`);
 
 	let filteredItems = df
 		.where(row => [itemGender, 'Unisex'].includes(row['gender']))
@@ -151,7 +151,7 @@ async function getClothRecommendations(image, maxRetries = 2) {
 	let retries = 0;
 	while (retries <= maxRetries) {
 		for (let rec of recommendations) {
-			const suggestedImageBase64 = await encodeImageToBase64(`./data/images/${rec.id}.jpg`);
+			const suggestedImageBase64 = await encodeImageToBase64(`./public/data/images/${rec.id}.jpg`);
 			const matchResult = await checkMatch(base64Image, suggestedImageBase64);
 
 			if (matchResult.answer === 'yes') {
