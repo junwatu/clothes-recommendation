@@ -2,13 +2,10 @@ import express from 'express';
 import path from 'path';
 import { getClothRecommendations } from './lib/rag.js';
 import { __dirname } from './dirname.js';
-//import { generateRandomID } from './rangen.js';
-
-/**
+import { generateRandomID } from './rangen.js';
 import griddb from './db/griddb.js';
 import store from './db/griddbClient.js';
 import { getOrCreateContainer, insertData, queryData, queryDataById } from './db/griddbOperations.js';
-*/
 
 const app = express();
 const PORT = 3000;
@@ -16,14 +13,12 @@ const PORT = 3000;
 app.use(express.json());
 app.use(express.static('www'));
 
-/** 
 const containerName = 'myContainer';
 const columnInfoList = [
 	['id', griddb.Type.INTEGER],
 	['image', griddb.Type.STRING],
-	['recommendation', griddb.Type.STRING]
+	['recommendations', griddb.Type.STRING]
 ];
-*/
 
 app.get('/', async (req, res) => {
 	res.sendFile('index.html');
@@ -52,11 +47,11 @@ app.post('/recommendation', async (req, res) => {
 
 		console.log(JSON.stringify(cleanRecommendations))
 
-		//const container = await getOrCreateContainer(containerName, columnInfoList);
-		//await insertData(container, [generateRandomID(), product.image, JSON.stringify(cleanRecommendations)]);
+		const container = await getOrCreateContainer(containerName, columnInfoList);
+		await insertData(container, [generateRandomID(), product.image, JSON.stringify(cleanRecommendations)]);
 
 		const response = {
-			recommendations, // Now guaranteed to be an array
+			recommendations,
 			metadata: {
 				processedAt: new Date().toISOString(),
 				totalResults: recommendations.length,
@@ -79,9 +74,6 @@ app.post('/recommendation', async (req, res) => {
 	}
 });
 
-
-
-/** disable for non-db testing
 app.get('/query', async (req, res) => {
 	try {
 		const container = await store.getContainer(containerName);
@@ -109,9 +101,6 @@ app.get('/query/:id', async (req, res) => {
 		res.status(500).json({ error: 'Failed to query data by ID' });
 	}
 });
-
-*/
-
 
 // Error handling middleware
 app.use((err, req, res, next) => {
