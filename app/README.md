@@ -27,5 +27,5 @@ docker build -t nodejs-clothes-recommendation .
 ## Running the code
 
 ```shell
-docker run --name clothes-rag-griddb --network griddb-net -e GRIDDB_CLUSTER_NAME=myCluster -e GRIDDB_USERNAME=admin -e GRIDDB_PASSWORD=admin -e IP_NOTIFICATION_MEMBER=griddb-server:10001 -p 3000:3000 nodejs-clothes-recommendation
+docker run --name clothes-rag-griddb --network griddb-net -e GRIDDB_CLUSTER_NAME=myCluster -e GRIDDB_USERNAME=admin -e GRIDDB_PASSWORD=admin -e IP_NOTIFICATION_MEMBER=griddb-server:10001 --env-file .env -p 3000:3000 nodejs-clothes-recommendation
 ```
