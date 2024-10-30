@@ -170,8 +170,7 @@ Combining GPT-4o mini with Retrieval-Augmented Generation (RAG) offers several p
 2. **Access to Information**: RAG integrates the generative abilities of GPT-4o mini with a retrieval system that draws from a large database of fashion-related knowledge, ensuring relevant information is readily available.
 3. **Personalization**: The system can provide tailored recommendations based on user preferences and historical data, enhancing the shopping experience.
 
-In this post, only point 1 and 2 that is used in the project.
-
+In this post, only points 1 and 2 are utilized for the project.
 ## **Prerequisites**
 
 ### OpenAI
