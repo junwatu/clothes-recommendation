@@ -35,8 +35,8 @@ app.post('/recommendation', async (req, res) => {
 	}
 
 	try {
-		const realPath = path.join(__dirname, 'public', product.thumbnail);
-		const recommendationResults = await getClothRecommendations(realPath);
+		const realImagePath = path.join(__dirname, 'public', product.thumbnail);
+		const recommendationResults = await getClothRecommendations(realImagePath);
 
 		// Ensure recommendations is always an array
 		const recommendations = Array.isArray(recommendationResults)
@@ -45,7 +45,6 @@ app.post('/recommendation', async (req, res) => {
 
 		const cleanRecommendations = recommendations.map(({ embeddings, ...rest }) => rest);
 
-		//console.log(JSON.stringify(cleanRecommendations))
 
 		const container = await getOrCreateContainer(containerName, columnInfoList);
 		await insertData(container, [generateRandomID(), product.image, JSON.stringify(cleanRecommendations)]);
