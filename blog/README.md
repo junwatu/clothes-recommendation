@@ -29,18 +29,18 @@ In this article, we will use the GPT-4o mini model to analyze images of clothing
 
 ## Running The Project
 
-This app tested on ARM Machines such as Apple MacBook M1 or M2 and to run the project you need [Docker](#docker) installed.
+This app is tested on ARM Machines such as Apple MacBook M1 or M2 and to run the project you need [Docker](#docker) installed.
 
 ### 1. `.env` Setup
 
-Create an empty directory, for example `clothes-rag` and change to that directory:
+Create an empty directory, for example, `clothes-rag`, and change to that directory:
 
 ```shell
 mkdir clothes-rag
 cd clothes-rag
 ```
 
-Create an `.env` file with these keys:
+Create a `.env` file with these keys:
 
 ```ini
 OPENAI_API_KEY=
@@ -88,13 +88,13 @@ services:
 
 ### 3. Run
 
-When step 1 and 2 finished, run the app with this command:
+When steps 1 and 2 are finished, run the app with this command:
 
 ```shell
 docker-compose up -d
 ```
 
-If everything running, you will get similar response to this:
+If everything running, you will get a similar response to this:
 
 ```shell
 [+] Running 3/3
@@ -109,7 +109,7 @@ Open the browser and go to `http://localhost:3000`. By default the app will auto
 
 ![app-demo](images/clother-rag.gif)
 
-If you want to run the project locally from the app source code, please go and read this [section](#project-development).
+If you want to run the project locally from the app source code, please read this [section](#project-development).
 
 ## **System Architecture**
 
@@ -172,7 +172,7 @@ Combining GPT-4o mini with Retrieval-Augmented Generation (RAG) offers several p
 
 ### OpenAI
 
-There few steps needed to set up on OpenAI. Go to your project dashboard and do these steps:
+There few steps needed to set up OpenAI. Go to your project dashboard and do these steps:
 
 1. You need to enable two models from OpenAI:
 
@@ -185,7 +185,7 @@ There few steps needed to set up on OpenAI. Go to your project dashboard and do 
 
     ![setup key](images/create-dev-key.png)
 
-    Use the key for the value of `OPENAI_API_KEY` in the `.env` file. This file sould be ignored from the repository.
+    Use the key for the value of `OPENAI_API_KEY` in the `.env` file. This file should be ignored from the repository.
 
 ### Docker
 
@@ -239,7 +239,7 @@ To connect Node.js and GridDB database, you need the [gridb-node-api](https://gi
 
 ## Project Development
 
-If you want to developing the project, you need to do these few steps:
+If you want to develop the project, you need to do these few steps:
 
 ### 1. Check the GridDB
 
@@ -289,7 +289,7 @@ GRIDDB_PASSWORD=admin
 IP_NOTIFICATION_MEMBER=griddb-server:10001
 ```
 
-Make sure you have key to access OpenAI service. For detail on how to do this, read the previous [section](#openai).
+Make sure you have the key to access the OpenAI service. For details on how to do this, read the previous [section](#openai).
 
 Run the app docker using this command:
 
@@ -304,7 +304,7 @@ Also, by using the Docker Desktop you can easily check if the GridDB and the doc
 
 ![docker apps](images/app-is-running.png)
 
-If everthing running you can test the app using the browser.
+If everything running you can test the app using the browser.
 
 ## **Node.js Backend**
 
@@ -319,7 +319,7 @@ This app uses Node.js as the backend server. It serves user interface files and 
 | `/query`          | `GET`  | Retrieves all stored data.          |
 | `/query/:id`      | `GET`  | Retrieves data by a specific ID.    |
 
-The core functionaliy for this app is in the `/recommendation` route. The `getClothRecommendations` function will take a selected product, which is essentially a product image and will return an array of product recommendation.
+The core functionality for this app is in the `/recommendation` route. The `getClothRecommendations` function will take a selected product, which is essentially a product image, and will return an array of product recommendations.
 
 ```js
 const recommendationResults = await getClothRecommendations(realImagePath);
@@ -329,7 +329,7 @@ const recommendationResults = await getClothRecommendations(realImagePath);
 
 ### API Documentation
 
-The RAG source code is in the `lib\rag.js` file. This file is responsible to get the clothes recommendation.
+The RAG source code is in the `lib\rag.js` file. This file is responsible for getting the clothes recommendation.
 
 | **Function Name**          | **Description**                                                                                                           |
 |----------------------------|---------------------------------------------------------------------------------------------------------------------------|
@@ -351,9 +351,9 @@ function cosineSimilarityManual(vec1, vec2) {
 }
 ```
 
-If the vector result is tend to value 1 then the clothes is similar or recommended. You can set the minimum similarity score for a clothes to be included.
+If the vector result is tend to value 1 then the clothes is similar or recommended. You can set the minimum similarity score for clothes to be included.
 
-In this code, the minimum threshold where the clothes is considering as a recommendation is `0.5`, you can change this to a higher value for stricter recommendation:
+In this code, the minimum threshold where the clothes are considered as a recommendation is `0.5`, you can change this to a higher value for stricter recommendations:
 
 ```js
 function findSimilarItems(inputEmbedding, embeddings, threshold = 0.5, topK = 2) {
@@ -372,13 +372,13 @@ function findSimilarItems(inputEmbedding, embeddings, threshold = 0.5, topK = 2)
 
 The RAG data source uses a clothes style CSV file that contain embeddings values and from it the app get all the clothes recommendation.
 
-You can look all the clothes style database in the `data\clothes_styles_with_embeddings.csv` file.
+You can look at all the clothes style databases in the `data\clothes_styles_with_embeddings.csv` file.
 
 ## **Data Management with GridDB**
 
 ### API Documentation
 
-The main code that responsible for handling data input and output to GridDB is the `db/griddbOperarions.js` file. Here's the table summary for it's function:
+The main code that responsible for handling data input and output to GridDB is the `db/griddbOperarions.js` file. Here's the table summary for its function:
 
 | **Function**                    | **Description**                                                                                               |
 |----------------------------------|---------------------------------------------------------------------------------------------------------------|
@@ -387,7 +387,7 @@ The main code that responsible for handling data input and output to GridDB is t
 | `queryData`                      | Executes a query on the specified container and fetches the results, logging the number of rows retrieved.   |
 | `queryDataById`                 | Queries a container for a specific row identified by a unique ID, returning the corresponding row data.      |
 
-The GridDB database can be used to save data as collection or simply behave like column base database.
+The GridDB database can be used to save data as a collection or simply behave like a column base database.
 
 This function will use the existing container or create a new one:
 
@@ -425,7 +425,7 @@ const columnInfoList = [
 ];
 ```
 
-The recommendation data will be saved after succesfully response from OpenAI and this will be handled in the route `/recommendation`:
+The recommendation data will be saved after successful response from OpenAI and this will be handled in the route `/recommendation`:
 
 ```js
 const container = await getOrCreateContainer(containerName, columnInfoList);
@@ -438,11 +438,11 @@ To read data in the GridDB database, you can directly use the `/query` route.
 
 ## **Building User Interface**
 
-The user interface is build using the React library. The main user interface build only with 2 react components:
+The user interface is built using the React library. The main user interface is built only with 2 react components:
 
 ### `ProductSelector.tsx`
 
-This component show all the clothes products. For simplicity, the product lisr data is from static data:
+This component shows all the clothes products. For simplicity, the product list data is from static data:
 
 ```js
 const products: Product[] = [
