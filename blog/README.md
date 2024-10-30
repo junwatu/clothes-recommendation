@@ -6,15 +6,16 @@
 
 - [Clothes Recommendation System Using OpenAI \& RAG](#clothes-recommendation-system-using-openai--rag)
   - [Introduction](#introduction)
+  - [System Architecture](#system-architecture)
+  - [Running The Project](#running-the-project)
   - [Understanding Retrieval-Augmented Generation (RAG)](#understanding-retrieval-augmented-generation-rag)
   - [How Does RAG Work?](#how-does-rag-work)
   - [Advantages of OpenAI \& RAG in Fashion](#advantages-of-openai--rag-in-fashion)
-  - [System Architecture](#system-architecture)
   - [Prerequisites](#prerequisites)
     - [OpenAI](#openai)
     - [Docker](#docker)
     - [Node.js](#nodejs)
-  - [Run The Project](#run-the-project)
+  - [Building The Project](#building-the-project)
   - [Node.js Backend](#nodejs-backend)
   - [Data Management with GridDB](#data-management-with-griddb)
   - [Building User Interface](#building-user-interface)
@@ -27,32 +28,97 @@ Clothes recommendation is an important feature in any e-commerce solution. It gi
 
 In this article, we will use the GPT-4o mini model to analyze images of clothing and extract its colors and styles. With this information, we can accurately identify the characteristics of the input clothing item and complement the identified features with our knowledge base using the RAG technique.
 
-## **Understanding Retrieval-Augmented Generation (RAG)**
+## Running The Project
 
-Retrieval-augmented generation (RAG) enhances large language models (LLMs) by using external knowledge bases for more accurate responses. LLMs, trained on vast data with billions of parameters, perform tasks like answering questions or translations. RAG improves this by enabling the model to access specific domains or internal data without retraining.
+This app tested on ARM Machines such as Apple MacBook M1 or M2 and to run the project you need [Docker](#docker) installed.
 
-## How Does RAG Work?
+### 1. `.env` Setup
 
-Without RAG, the LLM takes the user input and creates a response based on the information it was trained on—or what it already knows.
+Create an empty directory, for example `clothes-rag` and change to that directory:
 
-With RAG, an information retrieval component is introduced that utilizes the user input to first pull information from a new knowledge source. The user query and the relevant information are both given to the LLM. The LLM uses the new knowledge and its training data to generate a better text response.
+```shell
+mkdir clothes-rag
+cd clothes-rag
+```
 
-![RAG simple diagram](images/rag.jpg)
+Create an `.env` file with these keys:
 
-## **Advantages of OpenAI & RAG in Fashion**
+```ini
+OPENAI_API_KEY=
+GRIDDB_CLUSTER_NAME=myCluster
+GRIDDB_USERNAME=admin
+GRIDDB_PASSWORD=admin
+IP_NOTIFICATION_MEMBER=griddb-server:10001
+```
 
-Combining GPT-4o mini with Retrieval-Augmented Generation (RAG) offers several practical benefits for the fashion industry:
+To get the `OPENAI_API_KEY` please read this tutorial [section](#openai).
 
-1. **Contextual Understanding**: GPT-4o mini analyzes clothing inputs and comprehends their context, leading to more accurate responses.
+### 2. Run with Docker Compose
 
-2. **Access to Information**: RAG integrates the generative abilities of GPT-4o mini with a retrieval system that draws from a large database of fashion-related knowledge, ensuring relevant information is readily available.
-3. **Personalization**: The system can provide tailored recommendations based on user preferences and historical data, enhancing the shopping experience.
+Create the `docker-compose.yml` file in the directory and use this setup configuration:
+
+```yml
+networks:
+  griddb-net:
+    driver: bridge
+
+services:
+  griddb-server:
+    image: griddbnet/griddb:arm-5.5.0
+    container_name: griddb-server
+    environment:
+      - GRIDDB_CLUSTER_NAME=${GRIDDB_CLUSTER_NAME}
+      - GRIDDB_PASSWORD=${GRIDDB_PASSWORD}
+      - GRIDDB_USERNAME=${GRIDDB_USERNAME}
+      - NOTIFICATION_MEMBER=1
+      - IP_NOTIFICATION_MEMBER=${IP_NOTIFICATION_MEMBER}
+    networks:
+      - griddb-net
+    ports:
+      - "10001:10001" # Expose GridDB port if needed for external access
+
+  clothes-rag:
+    image: junwatu/clothes-rag:latest
+    container_name: clothes-rag-griddb
+    env_file: .env  # Load environment variables from the single .env file
+    networks:
+      - griddb-net
+    ports:
+      - "3000:3000" # Expose application port for local access
+```
+
+### 3. Run
+
+When step 1 and 2 finished, run the app with this command:
+
+```shell
+docker-compose up -d
+```
+
+If everything running, you will get similar response to this:
+
+```shell
+[+] Running 3/3
+ ✔ Network clotes-rag-griddb_griddb-net  Created                     0.0s 
+ ✔ Container griddb-server               Started                     0.2s 
+ ✔ Container clothes-rag-griddb          Started                     0.2s 
+```
+
+### 4. Test the App
+
+Open the browser and go to `http://localhost:3000`.
+
+![app-demo](images/clother-rag.gif)
+
+ By default the app will automatically make a request for the default selected product.
+
+ If you want to run the project locally from the app source code, please go and read this [section](#project-development).
 
 ## **System Architecture**
 
-![system-arch](images/system-arch.jpg)
-
 This system architecture leverages **RAG** to ensure that the recommendations are informed by both **user-specific input** and **stored data**, making them more relevant and customized.
+
+![system-arch](images/system-arch.jpg)
 
 Here’s a breakdown of the components and their interactions:
 
@@ -84,6 +150,27 @@ Here’s a breakdown of the components and their interactions:
 
 - After generating the recommendation, the response is sent back through the Node.js backend to the **React.js** user interface, where the user can view the clothing suggestions.
 
+## **Understanding Retrieval-Augmented Generation (RAG)**
+
+Retrieval-augmented generation (RAG) enhances large language models (LLMs) by using external knowledge bases for more accurate responses. LLMs, trained on vast data with billions of parameters, perform tasks like answering questions or translations. RAG improves this by enabling the model to access specific domains or internal data without retraining.
+
+## How Does RAG Work?
+
+Without RAG, the LLM takes the user input and creates a response based on the information it was trained on—or what it already knows.
+
+With RAG, an information retrieval component is introduced that utilizes the user input to first pull information from a new knowledge source. The user query and the relevant information are both given to the LLM. The LLM uses the new knowledge and its training data to generate a better text response.
+
+![RAG simple diagram](images/rag.jpg)
+
+## **Advantages of OpenAI & RAG in Fashion**
+
+Combining GPT-4o mini with Retrieval-Augmented Generation (RAG) offers several practical benefits for the fashion industry:
+
+1. **Contextual Understanding**: GPT-4o mini analyzes clothing inputs and comprehends their context, leading to more accurate responses.
+
+2. **Access to Information**: RAG integrates the generative abilities of GPT-4o mini with a retrieval system that draws from a large database of fashion-related knowledge, ensuring relevant information is readily available.
+3. **Personalization**: The system can provide tailored recommendations based on user preferences and historical data, enhancing the shopping experience.
+
 ## **Prerequisites**
 
 ### OpenAI
@@ -101,7 +188,7 @@ There few steps needed to set up on OpenAI. Go to your project dashboard and do 
 
     ![setup key](images/create-dev-key.png)
 
-    Use the key in the `.env` file. This file will be ignored from the repository.
+    Use the key for the value of `OPENAI_API_KEY` in the `.env` file. This file sould be ignored from the repository.
 
 ### Docker
 
@@ -109,9 +196,26 @@ For easy development and distribution, this project uses a docker container to "
 
 #### GridDB Docker
 
-This app needs a GridDB server and should be running before the app. In this project, we will use the GridDB docker for ARM machines.  For instructions on how to install it, please check out this [blog](https://griddb.net/en/blog/griddb-on-arm-with-docker/).
+This app needs a GridDB server and should be running before the app. In this project, we will use the GridDB docker for ARM machines.  
+
+To test the GridDB on your local machine, run this docker command:
+
+```shell
+docker network create griddb-net
+docker pull griddbnet/griddb:arm-5.5.0
+docker run --name griddb-server \
+    --network griddb-net \
+    -e GRIDDB_CLUSTER_NAME=myCluster \
+    -e GRIDDB_PASSWORD=admin \
+    -e NOTIFICATION_MEMBER=1 \
+    -d -t griddbnet/griddb:arm-5.5.0
+```
+
+Using the Docker Desktop, you can easily check if the docker is running.
 
 ![griddb docker arm](images/griddb-docker-arm.png)
+
+For more about GridDB docker for ARM, please check out this [blog](https://griddb.net/en/blog/griddb-on-arm-with-docker/).
 
 ### Node.js
 
@@ -136,11 +240,13 @@ npm -v # should print `8.19.4``
 
 To connect Node.js and GridDB database, you need the [gridb-node-api](https://github.com/nodejs/node-addon-api) npm package which is a Node.js binding developed using GridDB C Client and Node addon API.
 
-## Run The Project
+## Project Development
+
+If you want to follow the project development you need to setup these few steps:
 
 ### 1. Check the GridDB
 
-Make sure the GridDB docker is running. To check it, you can use this command:
+To make this app work as expected, make sure the GridDB docker is running. To check it, you can use this docker command:
 
 ```shell
 # Check container status
@@ -153,7 +259,7 @@ If the GridDB is running, you will have a similar response to this:
 fcace9e13b5f   griddbnet/griddb:arm-5.5.0      "/bin/bash /start-gr…"   3 weeks ago   Up 20 hours   0.0.0.0:10001->10001/tcp   griddb-server
 ```
 
-### 2. Clone the App
+### 2. Clone the App Source Code
 
 Clone the app source code from this [repository](https://github.com/junwatu/clothes-recommendation):
 
@@ -161,24 +267,47 @@ Clone the app source code from this [repository](https://github.com/junwatu/clot
 git clone https://github.com/junwatu/clothes-recommendation.git
 ```
 
-Change the directory into the `app` folder and dockerize the app:
+The `app` folder is the source code for this app.
+
+### 3. Build the App Docker
+
+Change the directory into the `app` folder and build the app docker version:
 
 ```shell
 cd app
-docker build -t nodejs-clothes-recommendation .
+docker build -t clothes-rag .
 ```
 
-### 3. Run Docker
+### 4. Run the App Docker
 
-Run the docker app using this command (you need to adjust the GridDB cluster name, username, and password if these have different values):
+Before running the dockerize app, you need to setup a few enviroment keys. You can copy these keys from the `.env.example` file.
+
+Create an `.env` file:
 
 ```shell
-docker run --name clothes-rag-griddb --network griddb-net -e GRIDDB_CLUSTER_NAME=myCluster -e GRIDDB_USERNAME=admin -e GRIDDB_PASSWORD=admin -e IP_NOTIFICATION_MEMBER=griddb-server:10001 --env-file .env -p 3000:3000 nodejs-clothes-recommendation
+OPENAI_API_KEY=
+GRIDDB_CLUSTER_NAME=myCluster
+GRIDDB_USERNAME=admin
+GRIDDB_PASSWORD=admin
+IP_NOTIFICATION_MEMBER=griddb-server:10001
 ```
 
-Also, by using the Docker Desktop you can easily check if the GridDB and the Docker app are running or not.
+Make sure you have key to access OpenAI service. For detail on how to do this, read the previous [section](#openai).
+
+Run the app docker using this command:
+
+```shell
+docker run --name clothes-rag-griddb \
+    --network griddb-net \
+    --env-file .env \
+    -p 3000:3000 clothes-rag
+```
+
+Also, by using the Docker Desktop you can easily check if the GridDB and the dockerize app are running or not.
 
 ![docker apps](images/app-is-running.png)
+
+If everthing running you can test the app using the browser.
 
 ## **Node.js Backend**
 

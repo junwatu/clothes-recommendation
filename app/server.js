@@ -2,7 +2,7 @@ import express from 'express';
 import path from 'path';
 import { getClothRecommendations } from './lib/rag.js';
 import { __dirname } from './dirname.js';
-import { generateRandomID } from './rangen.js';
+import { generateRandomID } from './lib/rangen.js';
 import griddb from './db/griddb.js';
 import store from './db/griddbClient.js';
 import { getOrCreateContainer, insertData, queryData, queryDataById } from './db/griddbOperations.js';
@@ -45,7 +45,7 @@ app.post('/recommendation', async (req, res) => {
 
 		const cleanRecommendations = recommendations.map(({ embeddings, ...rest }) => rest);
 
-		console.log(JSON.stringify(cleanRecommendations))
+		//console.log(JSON.stringify(cleanRecommendations))
 
 		const container = await getOrCreateContainer(containerName, columnInfoList);
 		await insertData(container, [generateRandomID(), product.image, JSON.stringify(cleanRecommendations)]);

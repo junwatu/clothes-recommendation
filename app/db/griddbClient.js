@@ -14,4 +14,6 @@ const store = factory.getStore({
 	"password": password
 });
 
+console.log(store)
+
 export default store

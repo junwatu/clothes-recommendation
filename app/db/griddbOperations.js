@@ -23,10 +23,11 @@ export async function getOrCreateContainer(containerName, columnInfoList, rowKey
 // Function to insert data into the container
 export async function insertData(container, rowData) {
 	try {
-		container.setAutoCommit(false);
+		//container.setAutoCommit(false);
+		console.log(rowData)
 		await container.put(rowData);
-		await container.commit();
-		console.log('Data committed successfully.');
+		//await container.commit();
+		console.log('Data saved successfully.');
 	} catch (err) {
 		console.error("Error inserting data:", err.message);
 		throw err;
@@ -37,13 +38,14 @@ export async function insertData(container, rowData) {
 // Function to query data
 export async function queryData(container, queryStr = "select *") {
 	try {
-		let query = container.query(queryStr);
+		let query = await container.query(queryStr);
 		let rs = await query.fetch();
 		const results = [];
 		while (rs.hasNext()) {
 			const row = rs.next()
 			results.push(row);
 		}
+		console.log(`data query:${results.length}`)
 		return results;
 	} catch (err) {
 		console.error("Error querying data:", err.message);
