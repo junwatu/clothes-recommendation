@@ -258,6 +258,8 @@ If the GridDB is running, you will have a similar response to this:
 fcace9e13b5f   griddbnet/griddb:arm-5.5.0      "/bin/bash /start-gr…"   3 weeks ago   Up 20 hours   0.0.0.0:10001->10001/tcp   griddb-server
 ```
 
+and if it's not running, please check this previous [section](#griddb-docker).
+
 ### 2. Clone the App Source Code
 
 Clone the app source code from this [repository](https://github.com/junwatu/clothes-recommendation):
@@ -279,9 +281,7 @@ docker build -t clothes-rag .
 
 ### 4. Run the App Docker
 
-Before running the dockerize app, you need to setup a few enviroment keys. You can copy these keys from the `.env.example` file.
-
-Create an `.env` file:
+Before running the dockerize app, you need to setup a few enviroment keys. You can copy these keys from the `.env.example` file or create an `.env` file and fill with these keys:
 
 ```shell
 OPENAI_API_KEY=
@@ -293,7 +293,7 @@ IP_NOTIFICATION_MEMBER=griddb-server:10001
 
 Make sure you have the key to access the OpenAI service. For details on how to do this, read the previous [section](#openai).
 
-Run the app docker using this command:
+The last one is run the app docker using this command:
 
 ```shell
 docker run --name clothes-rag-griddb \
@@ -306,7 +306,7 @@ Also, by using the Docker Desktop you can easily check if the GridDB and the doc
 
 ![docker apps](images/app-is-running.png)
 
-If everything running you can test the app using the browser.
+From the screenshot above the GridDB is running on port 10001 and the app is runnning on port 3000. Now, you can test the app using the browser.
 
 ## **Node.js Backend**
 
@@ -316,12 +316,12 @@ This app uses Node.js as the backend server. It serves user interface files and 
 
 | Route             | Method | Description                         |
 |-------------------|--------|-------------------------------------|
-| `/`               | `GET`  | Serves the main HTML file.          |
+| `/`               | `GET`  | Serves the main user interface file.          |
 | `/recommendation` | `POST` | Generates clothing recommendations. |
-| `/query`          | `GET`  | Retrieves all stored data.          |
+| `/query`          | `GET`  | Retrieves stored data.          |
 | `/query/:id`      | `GET`  | Retrieves data by a specific ID.    |
 
-The core functionality for this app is in the `/recommendation` route. The `getClothRecommendations` function will take a selected product, which is essentially a product image, and will return an array of product recommendations.
+The core functionality for this app is in the `/recommendation` route. The `getClothRecommendations` function will take a selected product, which is essentially a product image, and it will return an array of product recommendations.
 
 ```js
 const recommendationResults = await getClothRecommendations(realImagePath);
