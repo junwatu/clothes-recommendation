@@ -372,9 +372,7 @@ function findSimilarItems(inputEmbedding, embeddings, threshold = 0.5, topK = 2)
 
 ### Data Source
 
-The RAG data source uses a clothes style CSV file that contain embeddings values and from it the app get all the clothes recommendation.
-
-You can look at all the clothes style databases in the `data\clothes_styles_with_embeddings.csv` file.
+The RAG data source uses a clothes style CSV file that contain embeddings values and from it the app get all the clothes recommendation. You can look at all the clothes style databases in the `data\clothes_styles_with_embeddings.csv` file.
 
 ## **Data Management with GridDB**
 
@@ -389,9 +387,7 @@ The main code that responsible for handling data input and output to GridDB is t
 | `queryData`                      | Executes a query on the specified container and fetches the results, logging the number of rows retrieved.   |
 | `queryDataById`                 | Queries a container for a specific row identified by a unique ID, returning the corresponding row data.      |
 
-The GridDB database can be used to save data as a collection or simply behave like a column base database.
-
-This function will use the existing container or create a new one:
+The GridDB database can be used to save data as a collection or simply behave like a column base database. This function will use the existing container or create a new collection container:
 
 ```js
 export async function getOrCreateContainer(containerName, columnInfoList, rowKey = true) {
@@ -413,7 +409,7 @@ export async function getOrCreateContainer(containerName, columnInfoList, rowKey
 }
 ```
 
-In the `getOrCreateContainer` function the `type` container info key should be set as `griddb.ContainerType.COLLECTION`.
+In the `getOrCreateContainer` function the `type` container info key should be set as `griddb.ContainerType.COLLECTION` so the GridDB will save the data as a collection.
 
 ### Save Data
 
