@@ -106,13 +106,11 @@ If everything running, you will get similar response to this:
 
 ### 4. Test the App
 
-Open the browser and go to `http://localhost:3000`.
+Open the browser and go to `http://localhost:3000`. By default the app will automatically make a request for the default selected product.
 
 ![app-demo](images/clother-rag.gif)
 
- By default the app will automatically make a request for the default selected product.
-
- If you want to run the project locally from the app source code, please go and read this [section](#project-development).
+If you want to run the project locally from the app source code, please go and read this [section](#project-development).
 
 ## **System Architecture**
 
@@ -196,9 +194,9 @@ For easy development and distribution, this project uses a docker container to "
 
 #### GridDB Docker
 
-This app needs a GridDB server and should be running before the app. In this project, we will use the GridDB docker for ARM machines.  
+This app needs a GridDB server and it should be running before the app.
 
-To test the GridDB on your local machine, run this docker command:
+In this project, we will use the GridDB docker for ARM machines.  To test the GridDB on your local machine, you can run these docker commands:
 
 ```shell
 docker network create griddb-net
@@ -211,7 +209,7 @@ docker run --name griddb-server \
     -d -t griddbnet/griddb:arm-5.5.0
 ```
 
-Using the Docker Desktop, you can easily check if the docker is running.
+By using the Docker Desktop, you can easily check if the docker is running.
 
 ![griddb docker arm](images/griddb-docker-arm.png)
 
@@ -242,7 +240,7 @@ To connect Node.js and GridDB database, you need the [gridb-node-api](https://gi
 
 ## Project Development
 
-If you want to follow the project development you need to setup these few steps:
+If you want to developing the project, you need to do these few steps:
 
 ### 1. Check the GridDB
 
@@ -377,9 +375,110 @@ The RAG data source uses a clothes style CSV file that contain embeddings values
 
 You can look all the clothes style database in the `data\clothes_styles_with_embeddings.csv` file.
 
-## **Save Data with GridDB**
+## **Data Management with GridDB**
 
+### API Documentation
+
+The main code that responsible for handling data input and output to GridDB is the `db/griddbOperarions.js` file. Here's the table summary for it's function:
+
+| **Function**                    | **Description**                                                                                               |
+|----------------------------------|---------------------------------------------------------------------------------------------------------------|
+| `getOrCreateContainer`           | Creates a new container or retrieves an existing one based on the specified container name and column info.  |
+| `insertData`                     | Inserts data into the specified container and logs the operation.                                             |
+| `queryData`                      | Executes a query on the specified container and fetches the results, logging the number of rows retrieved.   |
+| `queryDataById`                 | Queries a container for a specific row identified by a unique ID, returning the corresponding row data.      |
+
+The GridDB database can be used to save data as collection or simply behave like column base database.
+
+This function will use the existing container or create a new one:
+
+```js
+export async function getOrCreateContainer(containerName, columnInfoList, rowKey = true) {
+ try {
+  const conInfo = new griddb.ContainerInfo({
+   'name': containerName,
+   'columnInfoList': columnInfoList,
+   'type': griddb.ContainerType.COLLECTION,
+   'rowKey': rowKey
+  });
+
+  await store.dropContainer(containerName).catch(() => console.log("Container doesn't exist. Creating new one..."));
+  let container = await store.putContainer(conInfo, false);
+  return container;
+ } catch (err) {
+  console.error("Error creating container:", err.message);
+  throw err;
+ }
+}
+```
+
+In the `getOrCreateContainer` function the `type` container info key should be set as `griddb.ContainerType.COLLECTION`.
+
+### Save Data
+
+The data model for this app contains 3 data only: `id`, `image`, and `recommendations`:
+
+```js
+const columnInfoList = [
+ ['id', griddb.Type.INTEGER],
+ ['image', griddb.Type.STRING],
+ ['recommendations', griddb.Type.STRING]
+];
+```
+
+The recommendation data will be saved after succesfully response from OpenAI and this will be handled in the route `/recommendation`:
+
+```js
+const container = await getOrCreateContainer(containerName, columnInfoList);
+  await insertData(container, [generateRandomID(), product.image, JSON.stringify(cleanRecommendations)]);
+```
+
+### Read Data
+
+To read data in the GridDB database, you can directly use the `/query` route.
 
 ## **Building User Interface**
 
+The user interface is build using the React library. The main user interface build only with 2 react components:
+
+### `ProductSelector.tsx`
+
+This component show all the clothes products. For simplicity, the product lisr data is from static data:
+
+```js
+const products: Product[] = [
+    {
+      id: 1,
+      name: "Striped Sports Jersey",
+      description: "Red and black striped sports jersey with short sleeves",
+      price: 39.99,
+      color: "Red/Black",
+      size: ["S", "M", "L", "XL"],
+      category: "Sports Wear",
+      image: "/data/preview/1.png",
+      thumbnail: "data/preview/1-small.jpeg",
+    },
+     //...
+  ];
+  ```
+
+  When user select one clothes from the product list, the thumbnail will sent to the server for processing and the server will find recommendations.
+
+  ![the product list](images/product-list.png)
+
+### `RecommendationCard.tsx`
+
+This component will display any recommendation for the selected product.
+
+![recommendation-card](images/recommendation-card.png)
+
 ## **Further Enhancements**
+
+To improve this product recommendation app, consider these five enhancements:
+
+- Personalize Recommendations with User Profiles.
+- Dynamic Product Catalog with Real-Time Database Integration.
+- Optimize Data Retrieval with Incremental Caching.  
+- Improve Recommendation Algorithm.  
+- UI and UX Enhancements.
+  
