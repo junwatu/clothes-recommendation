@@ -131,17 +131,19 @@ Here’s a breakdown of the components and their interactions:
 
 **Data Source (GridDB)**:
 
-- **GridDB** is used to store **clothing recommendation data** such as item descriptions, styles, weather conditions, user preferences, and more.
+- **GridDB** is used to store **clothing recommendation data** such as selected clothes and recommendations.
 
-**RAG Integration with OpenAI**:
+**RAG Integration with OpenAI (Embeddings)**:
 
-- In this system, the Node.js server uses RAG to provide **enhanced context** by combining information fetched from **Text Embedded Model** with the user’s prompt before passing it to **OpenAI**.
+- In this system, the RAG use data from CSV with Embeddings data.
+
+- The Node.js server uses RAG to provide **enhanced context** by combining information fetched from **Text Embedded Model**, data from CSV and the user’s prompt before passing it to **OpenAI**.
 
 **OpenAI (Text Embedding + GPT-4.0 Mini)**:
 
 - The **Text Embedding** model is used to generate vector representations of the prompt and any retrieved-context, making it easier to match user queries with relevant data.
 - **GPT-4.0 Mini** (a smaller variant of GPT-4) processes the **prompt, query, and enhanced context** together to generate tailored recommendations.
-- This step enables the system to provide more personalized and context-aware recommendations based on both user input and the data fetched from GridDB.
+- This step enables the system to provide more personalized and context-aware recommendations based on both user input and the data fetched from the CSV file.
 
 **Response Flow**:
 
