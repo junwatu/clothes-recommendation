@@ -1,3 +1,2 @@
-# Clothes Recommendation System
+# Clothes RAG
 
-This is a technical blog.
