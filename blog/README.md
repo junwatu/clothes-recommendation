@@ -313,12 +313,19 @@ If everthing running you can test the app using the browser.
 
 This app uses Node.js as the backend server. It serves user interface files and processes the AI recommendation for the selected product.
 
+### API Documentation
 
+| Route             | Method | Description                         |
+|-------------------|--------|-------------------------------------|
+| `/`               | `GET`  | Serves the main HTML file.          |
+| `/recommendation` | `POST` | Generates clothing recommendations. |
+| `/query`          | `GET`  | Retrieves all stored data.          |
+| `/query/:id`      | `GET`  | Retrieves data by a specific ID.    |
+
+## **RAG**
 
 ## **Data Management with GridDB**
 
 ## **Building User Interface**
-
-## **Demo**
 
 ## **Further Enhancements**
