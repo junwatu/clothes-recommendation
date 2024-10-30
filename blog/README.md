@@ -15,11 +15,10 @@
     - [OpenAI](#openai)
     - [Docker](#docker)
     - [Node.js](#nodejs)
-  - [Building The Project](#building-the-project)
+  - [Project Development](#project-development)  
   - [Node.js Backend](#nodejs-backend)
   - [Data Management with GridDB](#data-management-with-griddb)
   - [Building User Interface](#building-user-interface)
-  - [Demo](#demo)
   - [Further Enhancements](#further-enhancements)
 
 ## **Introduction**
