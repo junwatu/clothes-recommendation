@@ -322,9 +322,63 @@ This app uses Node.js as the backend server. It serves user interface files and 
 | `/query`          | `GET`  | Retrieves all stored data.          |
 | `/query/:id`      | `GET`  | Retrieves data by a specific ID.    |
 
+The core functionaliy for this app is in the `/recommendation` route. The `getClothRecommendations` function will take a selected product, which is essentially a product image and will return an array of product recommendation.
+
+```js
+const recommendationResults = await getClothRecommendations(realImagePath);
+```
+
 ## **RAG**
 
-## **Data Management with GridDB**
+### API Documentation
+
+The RAG source code is in the `lib\rag.js` file. This file is responsible to get the clothes recommendation.
+
+| **Function Name**          | **Description**                                                                                                           |
+|----------------------------|---------------------------------------------------------------------------------------------------------------------------|
+| `analyzeCloth`             | Analyzes an image of clothing to suggest matching items, category, and gender.                         |
+| `getEmbeddings`            | Generates embeddings for text descriptions, creating vector representations for similarity calculations.                  |
+| `findSimilarItems`         | Finds items similar to an input item based on cosine similarity, filtering by threshold and top matches.                       |
+| `getClothRecommendations`  | Generates recommendations for clothing items to pair with an input image, with retry for better matches.                |
+
+The core functionality is handled by the `findSimilarItems` function which use the cosine similarity function to compare between 2 vector (clothes number representation).
+
+```js
+function cosineSimilarityManual(vec1, vec2) {
+ vec1 = vec1.map(Number);
+ vec2 = vec2.map(Number);
+ const dotProduct = vec1.reduce((sum, v1, i) => sum + v1 * vec2[i], 0);
+ const mag1 = Math.sqrt(vec1.reduce((sum, v) => sum + v * v, 0));
+ const mag2 = Math.sqrt(vec2.reduce((sum, v) => sum + v * v, 0));
+ return dotProduct / (mag1 * mag2);
+}
+```
+
+If the vector result is tend to value 1 then the clothes is similar or recommended. You can set the minimum similarity score for a clothes to be included.
+
+In this code, the minimum threshold where the clothes is considering as a recommendation is `0.5`, you can change this to a higher value for stricter recommendation:
+
+```js
+function findSimilarItems(inputEmbedding, embeddings, threshold = 0.5, topK = 2) {
+ const similarities = embeddings.map((vec, index) =>
+  [index, cosineSimilarityManual(inputEmbedding, vec)]
+ );
+ const filteredSimilarities = similarities.filter(([, sim]) => sim >= threshold);
+ const sortedIndices = filteredSimilarities
+  .sort((a, b) => b[1] - a[1])
+  .slice(0, topK);
+ return sortedIndices;
+}
+```
+
+### Data Source
+
+The RAG data source uses a clothes style CSV file that contain embeddings values and from it the app get all the clothes recommendation.
+
+You can look all the clothes style database in the `data\clothes_styles_with_embeddings.csv` file.
+
+## **Save Data with GridDB**
+
 
 ## **Building User Interface**
 
