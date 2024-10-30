@@ -171,6 +171,7 @@ Combining GPT-4o mini with Retrieval-Augmented Generation (RAG) offers several p
 3. **Personalization**: The system can provide tailored recommendations based on user preferences and historical data, enhancing the shopping experience.
 
 In this post, only points 1 and 2 are utilized for the project.
+
 ## **Prerequisites**
 
 ### OpenAI
@@ -188,7 +189,7 @@ There few steps needed to set up OpenAI. Go to your project dashboard and do the
 
     ![setup key](images/create-dev-key.png)
 
-    Use the key for the value of `OPENAI_API_KEY` in the `.env` file. This file should be ignored from the repository.
+    Use the key for the value of `OPENAI_API_KEY` in the `.env` file and this file should be ignored from the repository.
 
 ### Docker
 
@@ -196,9 +197,7 @@ For easy development and distribution, this project uses a docker container to "
 
 #### GridDB Docker
 
-This app needs a GridDB server and it should be running before the app.
-
-In this project, we will use the GridDB docker for ARM machines.  To test the GridDB on your local machine, you can run these docker commands:
+This app needs a GridDB server and it should be running before the app. In this project, we will use the GridDB docker for ARM machines.  To test the GridDB on your local machine, you can run these docker commands:
 
 ```shell
 docker network create griddb-net
@@ -211,7 +210,7 @@ docker run --name griddb-server \
     -d -t griddbnet/griddb:arm-5.5.0
 ```
 
-By using the Docker Desktop, you can easily check if the docker is running.
+By using the Docker Desktop, you can easily check if the GridDB docker is running.
 
 ![griddb docker arm](images/griddb-docker-arm.png)
 
@@ -221,7 +220,7 @@ For more about GridDB docker for ARM, please check out this [blog](https://gridd
 
 > This is needed for the project development. However, if you just want to [run the project](#run-the-project), you don't have to install it.
 
-Install Node.js from [here](https://nodejs.org/en/download). For this project, we will use the `nvm` package manager and Node.js v16.20.2
+Install Node.js from [here](https://nodejs.org/en/download). For this project, we will use the `nvm` package manager and Node.js v20.18.0
 LTS version.
 
 ```shell
@@ -229,13 +228,13 @@ LTS version.
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
 
 # download and install Node.js
-nvm install 16
+nvm install 20
 
 # verifies the right Node.js version is in the environment
-node -v # should print `v16.20.2`
+node -v # should print `v20.18.0`
 
 # verifies the right NPM version is in the environment
-npm -v # should print `8.19.4``
+npm -v `
 ```
 
 To connect Node.js and GridDB database, you need the [gridb-node-api](https://github.com/nodejs/node-addon-api) npm package which is a Node.js binding developed using GridDB C Client and Node addon API.
