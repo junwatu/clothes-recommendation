@@ -262,6 +262,8 @@ and if it's not running, please check this previous [section](#griddb-docker).
 
 ### 2. Clone the App Source Code
 
+> Before cloning the source code, please ensure that [Git LFS](https://git-lfs.com/) is installed, as this app utilizes relatively large static files.
+
 Clone the app source code from this [repository](https://github.com/junwatu/clothes-recommendation):
 
 ```shell
